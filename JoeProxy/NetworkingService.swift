@@ -1,10 +1,3 @@
-//
-//  NetworkingService.swift
-//  JoeProxy
-//
-//  Created by Joseph McCraw on 6/6/24.
-//
-
 import Foundation
 import NIO
 import NIOSSL
@@ -16,11 +9,13 @@ protocol NetworkingService {
 
 class DefaultNetworkingService: NetworkingService {
     private let configurationService: ConfigurationService
+    private let filteringService: FilteringService
     private var group: MultiThreadedEventLoopGroup?
     private var channel: Channel?
     
-    init(configurationService: ConfigurationService) {
+    init(configurationService: ConfigurationService, filteringService: FilteringService) {
         self.configurationService = configurationService
+        self.filteringService = filteringService
     }
     
     func startServer() throws {
@@ -35,7 +30,7 @@ class DefaultNetworkingService: NetworkingService {
             .serverChannelOption(ChannelOptions.socket(SocketOptionLevel(SOL_SOCKET), SO_REUSEADDR), value: 1)
             .childChannelInitializer { channel in
                 channel.pipeline.addHandler(sslHandler).flatMap {
-                    channel.pipeline.addHandler(SimpleHandler())
+                    channel.pipeline.addHandler(SimpleHandler(filteringService: self.filteringService))
                 }
             }
             .childChannelOption(ChannelOptions.socket(IPPROTO_TCP, TCP_NODELAY), value: 1)
@@ -53,18 +48,33 @@ class DefaultNetworkingService: NetworkingService {
     }
 }
 
+// Handler for processing incoming requests and applying filtering criteria
 final class SimpleHandler: ChannelInboundHandler {
     typealias InboundIn = ByteBuffer
     typealias OutboundOut = ByteBuffer
     
+    private let filteringService: FilteringService
+    
+    init(filteringService: FilteringService) {
+        self.filteringService = filteringService
+    }
+    
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         let byteBuffer = self.unwrapInboundIn(data)
-        let string = byteBuffer.getString(at: 0, length: byteBuffer.readableBytes) ?? ""
-        print("Received: \(string)")
+        let requestString = byteBuffer.getString(at: 0, length: byteBuffer.readableBytes) ?? ""
         
-        var buffer = context.channel.allocator.buffer(capacity: byteBuffer.readableBytes)
-        buffer.writeString("Echo: \(string)")
-        context.writeAndFlush(self.wrapOutboundOut(buffer), promise: nil)
+        print("Received request: \(requestString)")
+        
+        // Apply filtering
+        if filteringService.shouldAllowRequest(url: requestString) {
+            var responseBuffer = context.channel.allocator.buffer(capacity: byteBuffer.readableBytes)
+            responseBuffer.writeString("Request allowed: \(requestString)")
+            context.writeAndFlush(self.wrapOutboundOut(responseBuffer), promise: nil)
+        } else {
+            var responseBuffer = context.channel.allocator.buffer(capacity: byteBuffer.readableBytes)
+            responseBuffer.writeString("Request blocked: \(requestString)")
+            context.writeAndFlush(self.wrapOutboundOut(responseBuffer), promise: nil)
+        }
     }
     
     func errorCaught(context: ChannelHandlerContext, error: Error) {

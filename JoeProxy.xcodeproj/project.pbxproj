@@ -22,6 +22,8 @@
 		445A3C9E2C126DF9008E68AE /* NIOSSL in Frameworks */ = {isa = PBXBuildFile; productRef = 445A3C9D2C126DF9008E68AE /* NIOSSL */; };
 		445A3CA02C126E36008E68AE /* NetworkServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 445A3C9F2C126E36008E68AE /* NetworkServiceTests.swift */; };
 		445A3CA22C1273E0008E68AE /* DefaultNetworkServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 445A3CA12C1273E0008E68AE /* DefaultNetworkServiceTests.swift */; };
+		445A3CA42C127BCB008E68AE /* FilteringCriteria.swift in Sources */ = {isa = PBXBuildFile; fileRef = 445A3CA32C127BCB008E68AE /* FilteringCriteria.swift */; };
+		445A3CA62C127BE5008E68AE /* FilteringService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 445A3CA52C127BE5008E68AE /* FilteringService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,6 +61,8 @@
 		445A3C932C126C3D008E68AE /* NetworkingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkingService.swift; sourceTree = "<group>"; };
 		445A3C9F2C126E36008E68AE /* NetworkServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkServiceTests.swift; sourceTree = "<group>"; };
 		445A3CA12C1273E0008E68AE /* DefaultNetworkServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultNetworkServiceTests.swift; sourceTree = "<group>"; };
+		445A3CA32C127BCB008E68AE /* FilteringCriteria.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilteringCriteria.swift; sourceTree = "<group>"; };
+		445A3CA52C127BE5008E68AE /* FilteringService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilteringService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -120,6 +124,8 @@
 				445A3C662C12647F008E68AE /* Assets.xcassets */,
 				445A3C6B2C12647F008E68AE /* JoeProxy.entitlements */,
 				445A3C682C12647F008E68AE /* Preview Content */,
+				445A3CA32C127BCB008E68AE /* FilteringCriteria.swift */,
+				445A3CA52C127BE5008E68AE /* FilteringService.swift */,
 			);
 			path = JoeProxy;
 			sourceTree = "<group>";
@@ -300,6 +306,8 @@
 				445A3C942C126C3D008E68AE /* NetworkingService.swift in Sources */,
 				445A3C652C12647D008E68AE /* ContentView.swift in Sources */,
 				445A3C8E2C126616008E68AE /* ConfigurationService.swift in Sources */,
+				445A3CA42C127BCB008E68AE /* FilteringCriteria.swift in Sources */,
+				445A3CA62C127BE5008E68AE /* FilteringService.swift in Sources */,
 				445A3C632C12647D008E68AE /* JoeProxyApp.swift in Sources */,
 				445A3C902C126646008E68AE /* LoggingService.swift in Sources */,
 			);
