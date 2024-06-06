@@ -14,6 +14,9 @@
 		445A3C752C12647F008E68AE /* JoeProxyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 445A3C742C12647F008E68AE /* JoeProxyTests.swift */; };
 		445A3C7F2C12647F008E68AE /* JoeProxyUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 445A3C7E2C12647F008E68AE /* JoeProxyUITests.swift */; };
 		445A3C812C12647F008E68AE /* JoeProxyUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 445A3C802C12647F008E68AE /* JoeProxyUITestsLaunchTests.swift */; };
+		445A3C8E2C126616008E68AE /* ConfigurationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 445A3C8D2C126616008E68AE /* ConfigurationService.swift */; };
+		445A3C902C126646008E68AE /* LoggingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 445A3C8F2C126646008E68AE /* LoggingService.swift */; };
+		445A3C922C126737008E68AE /* LogginServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 445A3C912C126737008E68AE /* LogginServiceTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,6 +48,9 @@
 		445A3C7A2C12647F008E68AE /* JoeProxyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = JoeProxyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		445A3C7E2C12647F008E68AE /* JoeProxyUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoeProxyUITests.swift; sourceTree = "<group>"; };
 		445A3C802C12647F008E68AE /* JoeProxyUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoeProxyUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		445A3C8D2C126616008E68AE /* ConfigurationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationService.swift; sourceTree = "<group>"; };
+		445A3C8F2C126646008E68AE /* LoggingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingService.swift; sourceTree = "<group>"; };
+		445A3C912C126737008E68AE /* LogginServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogginServiceTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -97,6 +103,8 @@
 			children = (
 				445A3C622C12647D008E68AE /* JoeProxyApp.swift */,
 				445A3C642C12647D008E68AE /* ContentView.swift */,
+				445A3C8D2C126616008E68AE /* ConfigurationService.swift */,
+				445A3C8F2C126646008E68AE /* LoggingService.swift */,
 				445A3C662C12647F008E68AE /* Assets.xcassets */,
 				445A3C6B2C12647F008E68AE /* JoeProxy.entitlements */,
 				445A3C682C12647F008E68AE /* Preview Content */,
@@ -116,6 +124,7 @@
 			isa = PBXGroup;
 			children = (
 				445A3C742C12647F008E68AE /* JoeProxyTests.swift */,
+				445A3C912C126737008E68AE /* LogginServiceTests.swift */,
 			);
 			path = JoeProxyTests;
 			sourceTree = "<group>";
@@ -260,7 +269,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				445A3C652C12647D008E68AE /* ContentView.swift in Sources */,
+				445A3C8E2C126616008E68AE /* ConfigurationService.swift in Sources */,
 				445A3C632C12647D008E68AE /* JoeProxyApp.swift in Sources */,
+				445A3C902C126646008E68AE /* LoggingService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -269,6 +280,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				445A3C752C12647F008E68AE /* JoeProxyTests.swift in Sources */,
+				445A3C922C126737008E68AE /* LogginServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -34,3 +34,35 @@ final class JoeProxyTests: XCTestCase {
     }
 
 }
+
+class ConfigurationServiceTests: XCTestCase {
+    
+    var configurationService: ConfigurationService!
+    var userDefaults: UserDefaults!
+
+    override func setUpWithError() throws {
+        userDefaults = UserDefaults(suiteName: "TestDefaults")
+        configurationService = DefaultConfigurationService(userDefaults: userDefaults)
+    }
+
+    override func tearDownWithError() throws {
+        userDefaults.removePersistentDomain(forName: "TestDefaults")
+        userDefaults = nil
+        configurationService = nil
+    }
+
+    func testProxyPort() throws {
+        // Test setting and getting the proxy port
+        configurationService.proxyPort = 8080
+        XCTAssertEqual(configurationService.proxyPort, 8080)
+    }
+    
+    func testLogLevel() throws {
+        // Test setting and getting the log level
+        configurationService.logLevel = .debug
+        XCTAssertEqual(configurationService.logLevel, .debug)
+        
+        configurationService.logLevel = .error
+        XCTAssertEqual(configurationService.logLevel, .error)
+    }
+}
