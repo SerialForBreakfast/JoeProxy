@@ -21,6 +21,7 @@
 		445A3C9B2C126DB9008E68AE /* NIO in Frameworks */ = {isa = PBXBuildFile; productRef = 445A3C9A2C126DB9008E68AE /* NIO */; };
 		445A3C9E2C126DF9008E68AE /* NIOSSL in Frameworks */ = {isa = PBXBuildFile; productRef = 445A3C9D2C126DF9008E68AE /* NIOSSL */; };
 		445A3CA02C126E36008E68AE /* NetworkServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 445A3C9F2C126E36008E68AE /* NetworkServiceTests.swift */; };
+		445A3CA22C1273E0008E68AE /* DefaultNetworkServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 445A3CA12C1273E0008E68AE /* DefaultNetworkServiceTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,6 +58,7 @@
 		445A3C912C126737008E68AE /* LogginServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogginServiceTests.swift; sourceTree = "<group>"; };
 		445A3C932C126C3D008E68AE /* NetworkingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkingService.swift; sourceTree = "<group>"; };
 		445A3C9F2C126E36008E68AE /* NetworkServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkServiceTests.swift; sourceTree = "<group>"; };
+		445A3CA12C1273E0008E68AE /* DefaultNetworkServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultNetworkServiceTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -136,6 +138,7 @@
 				445A3C742C12647F008E68AE /* JoeProxyTests.swift */,
 				445A3C912C126737008E68AE /* LogginServiceTests.swift */,
 				445A3C9F2C126E36008E68AE /* NetworkServiceTests.swift */,
+				445A3CA12C1273E0008E68AE /* DefaultNetworkServiceTests.swift */,
 			);
 			path = JoeProxyTests;
 			sourceTree = "<group>";
@@ -306,6 +309,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				445A3CA22C1273E0008E68AE /* DefaultNetworkServiceTests.swift in Sources */,
 				445A3C752C12647F008E68AE /* JoeProxyTests.swift in Sources */,
 				445A3CA02C126E36008E68AE /* NetworkServiceTests.swift in Sources */,
 				445A3C922C126737008E68AE /* LogginServiceTests.swift in Sources */,

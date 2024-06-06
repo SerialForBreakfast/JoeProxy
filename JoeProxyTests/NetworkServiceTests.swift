@@ -6,13 +6,15 @@
 //
 
 import XCTest
+import NIO
+import NIOSSL
 @testable import JoeProxy
 
 protocol NetworkingService {
     func startServer() throws
     func stopServer() throws
 }
-
+// Mock Networking Service to avoid actual network operations
 class MockNetworkingService: NetworkingService {
     private let configurationService: ConfigurationService
     private var isServerRunning = false
