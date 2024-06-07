@@ -72,6 +72,52 @@ class DefaultNetworkingServiceTests: XCTestCase {
         
         XCTAssertNoThrow(try channel.finish())
     }
+
+    func testNetworkingServiceWithEmptyAllowList() throws {
+        let criteria = FilteringCriteria(urls: [], filterType: .allow)
+        let filteringService = DefaultFilteringService(criteria: criteria)
+        networkingService = MockDefaultNetworkingService(configurationService: configurationService, filteringService: filteringService)
+        
+        let channel = EmbeddedChannel(handler: SimpleHandler(filteringService: filteringService))
+
+        // Simulate a request
+        var buffer = channel.allocator.buffer(capacity: 256)
+        buffer.writeString("https://example.com/test")
+        XCTAssertNoThrow(try channel.writeInbound(buffer))
+
+        // Read the response
+        if let responseBuffer = try channel.readOutbound(as: ByteBuffer.self) {
+            let responseData = responseBuffer.getString(at: 0, length: responseBuffer.readableBytes)
+            XCTAssertEqual(responseData, "Request blocked: https://example.com/test")
+        } else {
+            XCTFail("Client did not receive response from server")
+        }
+        
+        XCTAssertNoThrow(try channel.finish())
+    }
+
+    func testNetworkingServiceWithEmptyBlockList() throws {
+        let criteria = FilteringCriteria(urls: [], filterType: .block)
+        let filteringService = DefaultFilteringService(criteria: criteria)
+        networkingService = MockDefaultNetworkingService(configurationService: configurationService, filteringService: filteringService)
+        
+        let channel = EmbeddedChannel(handler: SimpleHandler(filteringService: filteringService))
+
+        // Simulate a request
+        var buffer = channel.allocator.buffer(capacity: 256)
+        buffer.writeString("https://example.com/test")
+        XCTAssertNoThrow(try channel.writeInbound(buffer))
+
+        // Read the response
+        if let responseBuffer = try channel.readOutbound(as: ByteBuffer.self) {
+            let responseData = responseBuffer.getString(at: 0, length: responseBuffer.readableBytes)
+            XCTAssertEqual(responseData, "Request allowed: https://example.com/test")
+        } else {
+            XCTFail("Client did not receive response from server")
+        }
+        
+        XCTAssertNoThrow(try channel.finish())
+    }
 }
 
 // Mock Networking Service to avoid actual network operations
