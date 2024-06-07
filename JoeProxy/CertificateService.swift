@@ -12,7 +12,7 @@ class CertificateService: ObservableObject {
     var opensslInstaller: OpenSSLInstaller
     
     init(opensslInstaller: OpenSSLInstaller = OpenSSLInstaller()) {
-        self.opensslInstaller = opensslInstaller        
+        self.opensslInstaller = opensslInstaller
         let fileManager = FileManager.default
         let urls = fileManager.urls(for: .documentDirectory, in: .userDomainMask)
         guard let documentDirectory = urls.first else {
@@ -27,12 +27,46 @@ class CertificateService: ObservableObject {
     }
     
     func setup() {
-        //        Check if OpenSSL is installed via Homebrew or use system OpenSSL
-        if let homebrewPath = try? shell("brew --prefix openssl"), !homebrewPath.isEmpty {
-            self.opensslPath = homebrewPath.trimmingCharacters(in: .whitespacesAndNewlines) + "/bin/openssl"
+        print("Setting up OpenSSL path...")
+        
+        if let opensslPath = findOpenSSLPath(), !opensslPath.isEmpty {
+            self.opensslPath = opensslPath
+            print("OpenSSL found at path: \(self.opensslPath)")
         } else {
-            self.opensslPath = "/usr/local/bin/openssl"
+            print("OpenSSL not found in standard locations.")
+            promptForOpenSSLPath()
         }
+    }
+    
+    private func findOpenSSLPath() -> String? {
+        do {
+            let homebrewPrefix = try shell("brew --prefix openssl@3")
+            print("Homebrew prefix for OpenSSL: \(homebrewPrefix)")
+            if !homebrewPrefix.isEmpty {
+                return homebrewPrefix.trimmingCharacters(in: .whitespacesAndNewlines) + "/bin/openssl"
+            }
+        } catch {
+            print("Error finding OpenSSL path with Homebrew: \(error)")
+        }
+        
+        let possiblePaths = [
+            "/usr/local/bin/openssl",
+            "/usr/bin/openssl",
+            "/opt/homebrew/bin/openssl",
+            "/opt/local/bin/openssl",
+            "/opt/local/sbin/openssl",
+            "/usr/local/sbin/openssl",
+            "/usr/sbin/openssl"
+        ]
+        
+        for path in possiblePaths {
+            if FileManager.default.fileExists(atPath: path) {
+                print("OpenSSL found at system path: \(path)")
+                return path
+            }
+        }
+        
+        return nil
     }
     
     func checkCertificateExists() {
@@ -108,7 +142,13 @@ class CertificateService: ObservableObject {
         task.standardOutput = pipe
         task.standardError = pipe
         task.arguments = ["-c", command]
-        task.executableURL = URL(fileURLWithPath: "/bin/zsh") // Use zsh or /bin/bash for macOS
+        
+        // Check if zsh exists, otherwise use bash
+        if FileManager.default.fileExists(atPath: "/bin/zsh") {
+            task.executableURL = URL(fileURLWithPath: "/bin/zsh")
+        } else {
+            task.executableURL = URL(fileURLWithPath: "/bin/bash")
+        }
         
         try task.run()
         
@@ -116,5 +156,11 @@ class CertificateService: ObservableObject {
         let output = String(data: data, encoding: .utf8)!
         
         return output
+    }
+    
+    private func promptForOpenSSLPath() {
+        // Implementation to prompt the user to provide the OpenSSL path
+        print("Please provide the path to your OpenSSL installation.")
+        // This can be implemented using a dialog or input field in the UI.
     }
 }

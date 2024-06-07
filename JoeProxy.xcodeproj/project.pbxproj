@@ -34,6 +34,8 @@
 		44EDF1F62C130E10007D7C35 /* OpenSSLInstallerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44EDF1F52C130E10007D7C35 /* OpenSSLInstallerTests.swift */; };
 		44EDF1F82C131344007D7C35 /* MockOpenSSLInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44EDF1F72C131344007D7C35 /* MockOpenSSLInstaller.swift */; };
 		44EDF1FA2C131360007D7C35 /* MockCertificateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44EDF1F92C131360007D7C35 /* MockCertificateService.swift */; };
+		44EDF1FC2C131780007D7C35 /* MockOpenSSLInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44EDF1FB2C131780007D7C35 /* MockOpenSSLInstaller.swift */; };
+		44EDF2022C131948007D7C35 /* entitlements.md in Resources */ = {isa = PBXBuildFile; fileRef = 44EDF2012C131948007D7C35 /* entitlements.md */; };
 		44F0A2782C12B8B400FC8160 /* CertificateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44F0A2772C12B8B400FC8160 /* CertificateService.swift */; };
 		44F0A27A2C13047A00FC8160 /* CertificateServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44F0A2792C13047A00FC8160 /* CertificateServiceTests.swift */; };
 /* End PBXBuildFile section */
@@ -84,6 +86,8 @@
 		44EDF1F52C130E10007D7C35 /* OpenSSLInstallerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenSSLInstallerTests.swift; sourceTree = "<group>"; };
 		44EDF1F72C131344007D7C35 /* MockOpenSSLInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockOpenSSLInstaller.swift; sourceTree = "<group>"; };
 		44EDF1F92C131360007D7C35 /* MockCertificateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockCertificateService.swift; sourceTree = "<group>"; };
+		44EDF1FB2C131780007D7C35 /* MockOpenSSLInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockOpenSSLInstaller.swift; sourceTree = "<group>"; };
+		44EDF2012C131948007D7C35 /* entitlements.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = entitlements.md; sourceTree = "<group>"; };
 		44F0A2772C12B8B400FC8160 /* CertificateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertificateService.swift; sourceTree = "<group>"; };
 		44F0A2792C13047A00FC8160 /* CertificateServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertificateServiceTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -131,6 +135,7 @@
 				445A3C612C12647D008E68AE /* JoeProxy */,
 				445A3C732C12647F008E68AE /* JoeProxyTests */,
 				445A3C7D2C12647F008E68AE /* JoeProxyUITests */,
+				44EDF2002C131923007D7C35 /* docs */,
 				445A3C602C12647D008E68AE /* Products */,
 				445A3C962C126D29008E68AE /* Frameworks */,
 			);
@@ -188,6 +193,7 @@
 				4402B64D2C12891D00761AC5 /* FilteringServiceTests.swift */,
 				4402B6582C12AB1700761AC5 /* SimpleHandlerTests.swift */,
 				44F0A2792C13047A00FC8160 /* CertificateServiceTests.swift */,
+				44EDF1FB2C131780007D7C35 /* MockOpenSSLInstaller.swift */,
 			);
 			path = JoeProxyTests;
 			sourceTree = "<group>";
@@ -206,6 +212,14 @@
 			children = (
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		44EDF2002C131923007D7C35 /* docs */ = {
+			isa = PBXGroup;
+			children = (
+				44EDF2012C131948007D7C35 /* entitlements.md */,
+			);
+			path = docs;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -321,6 +335,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				44EDF2022C131948007D7C35 /* entitlements.md in Resources */,
 				445A3C6A2C12647F008E68AE /* Preview Assets.xcassets in Resources */,
 				445A3C672C12647F008E68AE /* Assets.xcassets in Resources */,
 			);
@@ -373,6 +388,7 @@
 				44F0A27A2C13047A00FC8160 /* CertificateServiceTests.swift in Sources */,
 				44EDF1F62C130E10007D7C35 /* OpenSSLInstallerTests.swift in Sources */,
 				445A3C752C12647F008E68AE /* JoeProxyTests.swift in Sources */,
+				44EDF1FC2C131780007D7C35 /* MockOpenSSLInstaller.swift in Sources */,
 				445A3CA02C126E36008E68AE /* NetworkServiceTests.swift in Sources */,
 				4402B64E2C12891D00761AC5 /* FilteringServiceTests.swift in Sources */,
 				445A3C922C126737008E68AE /* LogginServiceTests.swift in Sources */,

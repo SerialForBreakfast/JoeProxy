@@ -15,7 +15,6 @@ class CertificateServiceTests: XCTestCase {
     override func setUpWithError() throws {
         opensslInstaller = MockOpenSSLInstaller()
         certificateService = MockCertificateService(opensslInstaller: opensslInstaller)
-        certificateService.opensslInstaller = opensslInstaller
     }
     
     override func tearDownWithError() throws {
@@ -40,5 +39,11 @@ class CertificateServiceTests: XCTestCase {
     func testInstallOpenSSL() throws {
         opensslInstaller.installOpenSSL()
         XCTAssertTrue(opensslInstaller.installCalled, "Install OpenSSL should have been called")
+    }
+    
+    func testFindOpenSSL() throws {
+        let path = opensslInstaller.findOpenSSL()
+        XCTAssertTrue(opensslInstaller.findCalled, "Find OpenSSL should have been called")
+        XCTAssertEqual(path, "/mock/path/to/openssl", "Mock path should be returned")
     }
 }
