@@ -6,36 +6,46 @@
 //
 import Foundation
 import NIO
+import NIOHTTP1
 
-final class SimpleHandler: ChannelInboundHandler {
-    typealias InboundIn = ByteBuffer
-    typealias OutboundOut = ByteBuffer
-    
+class SimpleHandler: ChannelInboundHandler {
+    typealias InboundIn = HTTPServerRequestPart
+    typealias OutboundOut = HTTPServerResponsePart
+
     private let filteringService: FilteringService
     private let loggingService: LoggingService
-    
+
     init(filteringService: FilteringService, loggingService: LoggingService) {
         self.filteringService = filteringService
         self.loggingService = loggingService
     }
-    
+
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
-        let byteBuffer = self.unwrapInboundIn(data)
-        let requestString = byteBuffer.getString(at: 0, length: byteBuffer.readableBytes) ?? ""
-        
-        loggingService.log("Received request: \(requestString)", level: .info)
-        
-        // Apply filtering
-        let filterDecision = filteringService.shouldAllowRequest(url: requestString) ? "allowed" : "blocked"
-        loggingService.log("Request \(filterDecision): \(requestString)", level: .info)
-        
-        var responseBuffer = context.channel.allocator.buffer(capacity: byteBuffer.readableBytes)
-        responseBuffer.writeString("Request \(filterDecision): \(requestString)")
-        loggingService.log("Response: \(responseBuffer.getString(at: 0, length: responseBuffer.readableBytes) ?? "")", level: .info)
-        
-        context.writeAndFlush(self.wrapOutboundOut(responseBuffer), promise: nil)
+        let part = unwrapInboundIn(data)
+        switch part {
+        case .head(let request):
+            let requestString = "\(request.method) \(request.uri)"
+            loggingService.log("[REQUEST] \(requestString)", level: .info)
+            let filterDecision = filteringService.shouldAllowRequest(url: request.uri) ? "allowed" : "blocked"
+            loggingService.log("Request \(filterDecision): \(requestString)", level: .info)
+            
+            if filterDecision == "blocked" {
+                var buffer = context.channel.allocator.buffer(capacity: 256)
+                buffer.writeString("Request blocked: \(request.uri)")
+                let responseHead = HTTPResponseHead(version: request.version, status: .forbidden)
+                context.write(wrapOutboundOut(.head(responseHead)), promise: nil)
+                context.write(wrapOutboundOut(.body(.byteBuffer(buffer))), promise: nil)
+                context.writeAndFlush(wrapOutboundOut(.end(nil)), promise: nil)
+                loggingService.log("[RESPONSE] \(requestString) Status: 403", level: .info)
+            } else {
+                // Additional processing if the request is allowed
+            }
+            
+        case .body, .end:
+            break
+        }
     }
-    
+
     func errorCaught(context: ChannelHandlerContext, error: Error) {
         loggingService.log("Error: \(error)", level: .error)
         context.close(promise: nil)

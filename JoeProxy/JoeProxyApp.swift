@@ -12,7 +12,8 @@ struct JoeProxyApp: App {
     var body: some Scene {
         WindowGroup {
             let configurationService = BasicConfigurationService()
-            let filteringService = DefaultFilteringService(criteria: FilteringCriteria(urls: ["example.com"], filterType: .allow))
+            let filteringCriteria = FilteringCriteria(urls: ["example.com"], filterType: .allow)
+            let filteringService = DefaultFilteringService(criteria: filteringCriteria)
             let loggingService = DefaultLoggingService(configurationService: configurationService)
             let networkingService = DefaultNetworkingService(configurationService: configurationService, filteringService: filteringService, loggingService: loggingService)
             

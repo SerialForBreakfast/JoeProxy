@@ -13,9 +13,9 @@ protocol ConfigurationService {
     // Add more configuration settings as needed
 }
 
-enum LogLevel: String {
-    case debug, info, warning, error
-}
+//enum LogLevel: String {
+//    case debug, info, warning, error
+//}
 
 class DefaultConfigurationService: ConfigurationService {
     private let userDefaults: UserDefaults

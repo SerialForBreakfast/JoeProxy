@@ -11,6 +11,8 @@
 		4402B6502C128BBC00761AC5 /* SimpleHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4402B64F2C128BBC00761AC5 /* SimpleHandler.swift */; };
 		4402B6532C128F0100761AC5 /* LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4402B6522C128F0100761AC5 /* LogView.swift */; };
 		4402B6552C12901500761AC5 /* BasicConfigurationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4402B6542C12901500761AC5 /* BasicConfigurationService.swift */; };
+		4402B6572C12A87400761AC5 /* NIOHTTP1 in Frameworks */ = {isa = PBXBuildFile; productRef = 4402B6562C12A87400761AC5 /* NIOHTTP1 */; };
+		4402B6592C12AB1700761AC5 /* SimpleHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4402B6582C12AB1700761AC5 /* SimpleHandlerTests.swift */; };
 		445A3C632C12647D008E68AE /* JoeProxyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 445A3C622C12647D008E68AE /* JoeProxyApp.swift */; };
 		445A3C652C12647D008E68AE /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 445A3C642C12647D008E68AE /* ContentView.swift */; };
 		445A3C672C12647F008E68AE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 445A3C662C12647F008E68AE /* Assets.xcassets */; };
@@ -52,6 +54,7 @@
 		4402B64F2C128BBC00761AC5 /* SimpleHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleHandler.swift; sourceTree = "<group>"; };
 		4402B6522C128F0100761AC5 /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
 		4402B6542C12901500761AC5 /* BasicConfigurationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasicConfigurationService.swift; sourceTree = "<group>"; };
+		4402B6582C12AB1700761AC5 /* SimpleHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleHandlerTests.swift; sourceTree = "<group>"; };
 		445A3C5F2C12647D008E68AE /* JoeProxy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = JoeProxy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		445A3C622C12647D008E68AE /* JoeProxyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoeProxyApp.swift; sourceTree = "<group>"; };
 		445A3C642C12647D008E68AE /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -78,6 +81,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4402B6572C12A87400761AC5 /* NIOHTTP1 in Frameworks */,
 				445A3C9E2C126DF9008E68AE /* NIOSSL in Frameworks */,
 				445A3C9B2C126DB9008E68AE /* NIO in Frameworks */,
 			);
@@ -165,6 +169,7 @@
 				445A3C9F2C126E36008E68AE /* NetworkServiceTests.swift */,
 				445A3CA12C1273E0008E68AE /* DefaultNetworkServiceTests.swift */,
 				4402B64D2C12891D00761AC5 /* FilteringServiceTests.swift */,
+				4402B6582C12AB1700761AC5 /* SimpleHandlerTests.swift */,
 			);
 			path = JoeProxyTests;
 			sourceTree = "<group>";
@@ -204,6 +209,7 @@
 			packageProductDependencies = (
 				445A3C9A2C126DB9008E68AE /* NIO */,
 				445A3C9D2C126DF9008E68AE /* NIOSSL */,
+				4402B6562C12A87400761AC5 /* NIOHTTP1 */,
 			);
 			productName = JoeProxy;
 			productReference = 445A3C5F2C12647D008E68AE /* JoeProxy.app */;
@@ -340,6 +346,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4402B6592C12AB1700761AC5 /* SimpleHandlerTests.swift in Sources */,
 				445A3CA22C1273E0008E68AE /* DefaultNetworkServiceTests.swift in Sources */,
 				445A3C752C12647F008E68AE /* JoeProxyTests.swift in Sources */,
 				445A3CA02C126E36008E68AE /* NetworkServiceTests.swift in Sources */,
@@ -678,6 +685,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		4402B6562C12A87400761AC5 /* NIOHTTP1 */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 445A3C992C126D97008E68AE /* XCRemoteSwiftPackageReference "swift-nio" */;
+			productName = NIOHTTP1;
+		};
 		445A3C9A2C126DB9008E68AE /* NIO */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 445A3C992C126D97008E68AE /* XCRemoteSwiftPackageReference "swift-nio" */;

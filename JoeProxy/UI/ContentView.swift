@@ -15,7 +15,13 @@ struct ContentView: View {
     }
     
     var body: some View {
-        LogView(viewModel: viewModel)
+        VStack {
+            LogView(viewModel: viewModel)
+            Button("Save Logs") {
+                viewModel.saveLogs()
+            }
+            .padding()
+        }
     }
 }
 
