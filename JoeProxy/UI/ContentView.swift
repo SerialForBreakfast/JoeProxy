@@ -22,14 +22,27 @@ struct ContentView: View {
             } else {
                 Text("No certificate found")
             }
-
-            Button("Generate Certificate") {
-                certificateService.generateCertificate()
+            
+            HStack {
+                Button("Generate Certificate") {
+                    do {
+                        try certificateService.generateCertificate()
+                    } catch {
+                        print("Failed to generate certificate: \(error)")
+                    }
+                }
+                .padding()
+                
+                if certificateService.certificateExists {
+                    Button("Open Directory") {
+                        certificateService.openCertificateDirectory()
+                    }
+                    .padding()
+                }
             }
-            .padding()
 
             LogView(viewModel: viewModel)
-            Button("Save Logs") {
+            Button("Save Log") {
                 viewModel.saveLog()
             }
             .padding()

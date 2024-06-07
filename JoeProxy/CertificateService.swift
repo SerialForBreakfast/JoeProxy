@@ -1,4 +1,5 @@
 import Foundation
+import AppKit
 import Combine
 import Security
 
@@ -171,6 +172,11 @@ class CertificateService: ObservableObject {
         let output = String(data: data, encoding: .utf8)!
         
         return output
+    }
+    
+    func openCertificateDirectory() {
+        let directoryURL = certificateURL.deletingLastPathComponent()
+        NSWorkspace.shared.open(directoryURL)
     }
     
     private func promptForOpenSSLPath() {
