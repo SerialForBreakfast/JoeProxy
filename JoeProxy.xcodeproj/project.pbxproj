@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4402B64E2C12891D00761AC5 /* FilteringServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4402B64D2C12891D00761AC5 /* FilteringServiceTests.swift */; };
 		445A3C632C12647D008E68AE /* JoeProxyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 445A3C622C12647D008E68AE /* JoeProxyApp.swift */; };
 		445A3C652C12647D008E68AE /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 445A3C642C12647D008E68AE /* ContentView.swift */; };
 		445A3C672C12647F008E68AE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 445A3C662C12647F008E68AE /* Assets.xcassets */; };
@@ -44,6 +45,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		4402B64D2C12891D00761AC5 /* FilteringServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilteringServiceTests.swift; sourceTree = "<group>"; };
 		445A3C5F2C12647D008E68AE /* JoeProxy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = JoeProxy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		445A3C622C12647D008E68AE /* JoeProxyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoeProxyApp.swift; sourceTree = "<group>"; };
 		445A3C642C12647D008E68AE /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -145,6 +147,7 @@
 				445A3C912C126737008E68AE /* LogginServiceTests.swift */,
 				445A3C9F2C126E36008E68AE /* NetworkServiceTests.swift */,
 				445A3CA12C1273E0008E68AE /* DefaultNetworkServiceTests.swift */,
+				4402B64D2C12891D00761AC5 /* FilteringServiceTests.swift */,
 			);
 			path = JoeProxyTests;
 			sourceTree = "<group>";
@@ -320,6 +323,7 @@
 				445A3CA22C1273E0008E68AE /* DefaultNetworkServiceTests.swift in Sources */,
 				445A3C752C12647F008E68AE /* JoeProxyTests.swift in Sources */,
 				445A3CA02C126E36008E68AE /* NetworkServiceTests.swift in Sources */,
+				4402B64E2C12891D00761AC5 /* FilteringServiceTests.swift in Sources */,
 				445A3C922C126737008E68AE /* LogginServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
