@@ -73,7 +73,8 @@ class MockLoggingService: LoggingService {
     }
     
     func log(_ message: String, level: LogLevel) {
-        logsSubject.value.append("[\(level.rawValue.uppercased())] \(message)")
+        let logMessage = "[\(level.rawValue.uppercased())] \(message)"
+        logsSubject.value.append(logMessage)
         logsSubject.send(logsSubject.value)
     }
     

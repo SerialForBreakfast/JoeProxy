@@ -24,14 +24,17 @@ class DefaultNetworkingService: NetworkingService {
         let group = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
         self.group = group
         
-        let sslContext = try NIOSSLContext(configuration: .makeClientConfiguration())
-        let sslHandler = try NIOSSLClientHandler(context: sslContext, serverHostname: nil)
+        let sslContext = try NIOSSLContext(configuration: .makeServerConfiguration(
+            certificateChain: try NIOSSLCertificate.fromPEMFile("cert.pem").map { .certificate($0) },
+            privateKey: .file("key.pem")
+        ))
         
         let bootstrap = ServerBootstrap(group: group)
             .serverChannelOption(ChannelOptions.backlog, value: 256)
             .serverChannelOption(ChannelOptions.socket(SocketOptionLevel(SOL_SOCKET), SO_REUSEADDR), value: 1)
             .childChannelInitializer { channel in
-                channel.pipeline.addHandler(sslHandler).flatMap {
+                let sslHandler = try! NIOSSLServerHandler(context: sslContext)
+                return channel.pipeline.addHandler(sslHandler).flatMap {
                     channel.pipeline.addHandler(SimpleHandler(filteringService: self.filteringService, loggingService: self.loggingService))
                 }
             }

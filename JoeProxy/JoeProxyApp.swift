@@ -14,7 +14,8 @@ struct JoeProxyApp: App {
             let configurationService = BasicConfigurationService()
             let filteringCriteria = FilteringCriteria(urls: ["example.com"], filterType: .allow)
             let filteringService = DefaultFilteringService(criteria: filteringCriteria)
-            let loggingService = DefaultLoggingService(configurationService: configurationService)
+//            let loggingService = DefaultLoggingService(configurationService: configurationService)
+            let loggingService = MockLoggingService() // Using MockLoggingService here
             let networkingService = DefaultNetworkingService(configurationService: configurationService, filteringService: filteringService, loggingService: loggingService)
             
             ContentView(loggingService: loggingService)
