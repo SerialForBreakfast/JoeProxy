@@ -24,23 +24,18 @@ struct ContentView: View {
             }
 
             Button("Generate Certificate") {
-                do {
-                    try certificateService.generateCertificate()
-                } catch {
-                    print("Failed to generate certificate: \(error)")
-                }
+                certificateService.generateCertificate()
             }
             .padding()
 
             LogView(viewModel: viewModel)
-            
             Button("Save Logs") {
-                viewModel.saveLog() // Updated method call to saveLogs
+                viewModel.saveLog()
             }
             .padding()
         }
         .onAppear {
-            certificateService.checkCertificateExists() // Should work now as the method is not private anymore
+            certificateService.checkCertificateExists()
         }
     }
 }
