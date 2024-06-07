@@ -10,12 +10,14 @@ protocol NetworkingService {
 class DefaultNetworkingService: NetworkingService {
     private let configurationService: ConfigurationService
     private let filteringService: FilteringService
+    private let loggingService: LoggingService
     private var group: MultiThreadedEventLoopGroup?
     private var channel: Channel?
     
-    init(configurationService: ConfigurationService, filteringService: FilteringService) {
+    init(configurationService: ConfigurationService, filteringService: FilteringService, loggingService: LoggingService) {
         self.configurationService = configurationService
         self.filteringService = filteringService
+        self.loggingService = loggingService
     }
     
     func startServer() throws {
@@ -30,7 +32,7 @@ class DefaultNetworkingService: NetworkingService {
             .serverChannelOption(ChannelOptions.socket(SocketOptionLevel(SOL_SOCKET), SO_REUSEADDR), value: 1)
             .childChannelInitializer { channel in
                 channel.pipeline.addHandler(sslHandler).flatMap {
-                    channel.pipeline.addHandler(SimpleHandler(filteringService: self.filteringService))
+                    channel.pipeline.addHandler(SimpleHandler(filteringService: self.filteringService, loggingService: self.loggingService))
                 }
             }
             .childChannelOption(ChannelOptions.socket(IPPROTO_TCP, TCP_NODELAY), value: 1)
