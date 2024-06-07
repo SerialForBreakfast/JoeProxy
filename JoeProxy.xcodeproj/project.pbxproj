@@ -110,7 +110,6 @@
 			isa = PBXGroup;
 			children = (
 				445A3C642C12647D008E68AE /* ContentView.swift */,
-				44F0A2772C12B8B400FC8160 /* CertificateService.swift */,
 				4402B6522C128F0100761AC5 /* LogView.swift */,
 			);
 			path = UI;
@@ -143,6 +142,7 @@
 				4402B6512C128EF100761AC5 /* UI */,
 				445A3C622C12647D008E68AE /* JoeProxyApp.swift */,
 				4402B6542C12901500761AC5 /* BasicConfigurationService.swift */,
+				44F0A2772C12B8B400FC8160 /* CertificateService.swift */,
 				445A3C8D2C126616008E68AE /* ConfigurationService.swift */,
 				445A3C8F2C126646008E68AE /* LoggingService.swift */,
 				445A3C932C126C3D008E68AE /* NetworkingService.swift */,

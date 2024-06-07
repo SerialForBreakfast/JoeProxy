@@ -33,8 +33,9 @@ struct ContentView: View {
             .padding()
 
             LogView(viewModel: viewModel)
+            
             Button("Save Logs") {
-                viewModel.saveLogs() // Updated method call to saveLogs
+                viewModel.saveLog() // Updated method call to saveLogs
             }
             .padding()
         }

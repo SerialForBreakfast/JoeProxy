@@ -22,17 +22,23 @@ class LogViewModel: ObservableObject {
             .store(in: &cancellables)
     }
     
-    func saveLogs() { // Updated method name to saveLogs
+    func saveLog() {
         loggingService.saveLogsToFile()
     }
 }
 
 struct LogView: View {
     @ObservedObject var viewModel: LogViewModel
-    
+
     var body: some View {
-        List(viewModel.logs, id: \.self) { log in
-            Text(log)
+        VStack {
+            Text("Log Entries")
+                .font(.headline)
+                .padding()
+
+            List(viewModel.logs, id: \.self) { log in
+                Text(log)
+            }
         }
     }
 }
