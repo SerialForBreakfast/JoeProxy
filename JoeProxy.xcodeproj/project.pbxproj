@@ -82,6 +82,7 @@
 		445A3CA12C1273E0008E68AE /* DefaultNetworkServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultNetworkServiceTests.swift; sourceTree = "<group>"; };
 		445A3CA32C127BCB008E68AE /* FilteringCriteria.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilteringCriteria.swift; sourceTree = "<group>"; };
 		445A3CA52C127BE5008E68AE /* FilteringService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilteringService.swift; sourceTree = "<group>"; };
+		44BBD33A2C13A8FF0015BE8D /* JoeProxyTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "JoeProxyTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		44EDF1F32C130DDC007D7C35 /* OpenSSLInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenSSLInstaller.swift; sourceTree = "<group>"; };
 		44EDF1F52C130E10007D7C35 /* OpenSSLInstallerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenSSLInstallerTests.swift; sourceTree = "<group>"; };
 		44EDF1F72C131344007D7C35 /* MockOpenSSLInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockOpenSSLInstaller.swift; sourceTree = "<group>"; };
@@ -193,6 +194,7 @@
 				4402B64D2C12891D00761AC5 /* FilteringServiceTests.swift */,
 				4402B6582C12AB1700761AC5 /* SimpleHandlerTests.swift */,
 				44F0A2792C13047A00FC8160 /* CertificateServiceTests.swift */,
+				44BBD33A2C13A8FF0015BE8D /* JoeProxyTests-Bridging-Header.h */,
 				44EDF1FB2C131780007D7C35 /* MockOpenSSLInstaller.swift */,
 			);
 			path = JoeProxyTests;
@@ -541,8 +543,9 @@
 		445A3C852C12647F008E68AE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = JoeProxy;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = JoeProxy/JoeProxy.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -552,6 +555,8 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = JoeProxy;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -568,8 +573,9 @@
 		445A3C862C12647F008E68AE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = JoeProxy;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = JoeProxy/JoeProxy.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -579,6 +585,8 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = JoeProxy;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

@@ -8,9 +8,8 @@
 import Foundation
 
 protocol ConfigurationService {
-    var proxyPort: Int { get set }
     var logLevel: LogLevel { get set }
-    // Add more configuration settings as needed
+    var proxyPort: Int { get set }
 }
 
 //enum LogLevel: String {

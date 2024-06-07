@@ -7,8 +7,6 @@ protocol NetworkingService {
     func stopServer() throws
 }
 
-import NIOSSL
-
 class DefaultNetworkingService: NetworkingService {
     private let configurationService: ConfigurationService
     private let filteringService: FilteringService
@@ -16,11 +14,10 @@ class DefaultNetworkingService: NetworkingService {
     private var group: MultiThreadedEventLoopGroup?
     private var channel: Channel?
     
-    init(configurationService: ConfigurationService, filteringService: FilteringService, loggingService: LoggingService, group: MultiThreadedEventLoopGroup? = nil) {
+    init(configurationService: ConfigurationService, filteringService: FilteringService, loggingService: LoggingService) {
         self.configurationService = configurationService
         self.filteringService = filteringService
         self.loggingService = loggingService
-        self.group = group
     }
     
     func startServer() throws {

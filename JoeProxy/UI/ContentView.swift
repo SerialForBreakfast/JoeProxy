@@ -1,24 +1,22 @@
-//
-//  ContentView.swift
-//  JoeProxy
-//
-//  Created by Joseph McCraw on 6/6/24.
-//
-
 import SwiftUI
 
 struct ContentView: View {
     @StateObject private var viewModel: LogViewModel
     @StateObject private var certificateService = CertificateService()
-
+    
     init(loggingService: LoggingService) {
         _viewModel = StateObject(wrappedValue: LogViewModel(loggingService: loggingService))
     }
-
+    
     var body: some View {
         VStack {
             if certificateService.certificateExists, let creationDate = certificateService.certificateCreationDate {
-                Text("Certificate exists, created on \(creationDate)")
+                HStack {
+                    Text("Certificate exists, created on \(creationDate)")
+//                    Button("Open Directory") {
+//                        NSWorkspace.shared.open(certificateService.certificateURL.deletingLastPathComponent())
+//                    }
+                }
             } else {
                 Text("No certificate found")
             }
@@ -35,14 +33,13 @@ struct ContentView: View {
                 
                 if certificateService.certificateExists {
                     Button("Open Directory") {
-                        certificateService.openCertificateDirectory()
+                        NSWorkspace.shared.open(certificateService.certificateURL.deletingLastPathComponent())
                     }
-                    .padding()
                 }
             }
-
+            
             LogView(viewModel: viewModel)
-            Button("Save Log") {
+            Button("Save Logs") {
                 viewModel.saveLog()
             }
             .padding()

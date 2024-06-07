@@ -22,18 +22,19 @@ class DefaultNetworkingServiceTests: XCTestCase {
     func testStartAndStopServer() throws {
         let criteria = FilteringCriteria(urls: ["example.com"], filterType: .allow)
         let filteringService = DefaultFilteringService(criteria: criteria)
-        let loggingService = DefaultLoggingService(configurationService: configurationService)
+        let loggingService: LoggingService = DefaultLoggingService(configurationService: configurationService) as LoggingService // Ensure conformance
         networkingService = MockDefaultNetworkingService(configurationService: configurationService, filteringService: filteringService, loggingService: loggingService)
         
         XCTAssertNoThrow(try networkingService.startServer())
         XCTAssertNoThrow(try networkingService.stopServer())
     }
+
     
     func testNetworkingServiceWithAllowListFiltering() throws {
         let criteria = FilteringCriteria(urls: ["example.com"], filterType: .allow)
         let filteringService = DefaultFilteringService(criteria: criteria)
-        let loggingService = DefaultLoggingService(configurationService: configurationService)
-        networkingService = MockDefaultNetworkingService(configurationService: configurationService, filteringService: filteringService, loggingService: loggingService)
+        let loggingService: DefaultLoggingService = DefaultLoggingService(configurationService: configurationService)
+        networkingService = MockDefaultNetworkingService(configurationService: configurationService, filteringService: filteringService, loggingService: loggingService as LoggingService)
         
         let channel = EmbeddedChannel(handler: SimpleHandler(filteringService: filteringService, loggingService: loggingService))
         
@@ -55,12 +56,12 @@ class DefaultNetworkingServiceTests: XCTestCase {
         // Close the channel
         XCTAssertNoThrow(try channel.close().wait())
     }
-    
+
     func testNetworkingServiceWithBlockListFiltering() throws {
         let criteria = FilteringCriteria(urls: ["example.com"], filterType: .block)
         let filteringService = DefaultFilteringService(criteria: criteria)
-        let loggingService = DefaultLoggingService(configurationService: configurationService)
-        networkingService = MockDefaultNetworkingService(configurationService: configurationService, filteringService: filteringService, loggingService: loggingService)
+        let loggingService: DefaultLoggingService = DefaultLoggingService(configurationService: configurationService)
+        networkingService = MockDefaultNetworkingService(configurationService: configurationService, filteringService: filteringService, loggingService: loggingService as LoggingService)
         
         let channel = EmbeddedChannel(handler: SimpleHandler(filteringService: filteringService, loggingService: loggingService))
 
@@ -79,7 +80,7 @@ class DefaultNetworkingServiceTests: XCTestCase {
         while let responsePart = try channel.readOutbound(as: HTTPServerResponsePart.self) {
             switch responsePart {
             case .head(let responseHead):
-                XCTAssertEqual(responseHead.status, .forbidden)
+                XCTAssertEqual(responseHead.status, .forbidden) // Ensure correct status type
                 receivedResponse = true
             case .body(let responseBody):
                 if case .byteBuffer(let byteBuffer) = responseBody {
@@ -128,4 +129,6 @@ class MockDefaultNetworkingService: NetworkingService {
 class MockDefaultNetworkingConfigurationService: ConfigurationService {
     var proxyPort: Int = 8081 // Use a non-restricted port
     var logLevel: LogLevel = .info
+
+    // Add missing properties and methods to conform to ConfigurationService
 }

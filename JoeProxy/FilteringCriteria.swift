@@ -7,17 +7,20 @@
 
 import Foundation
 
-enum FilterType {
-    case allow
-    case block
-}
-
 struct FilteringCriteria {
     let urls: [String]
     let filterType: FilterType
     
+    enum FilterType {
+        case allow, block
+    }
+    
     func shouldAllow(url: String) -> Bool {
-        let matches = urls.contains { url.contains($0) }
-        return filterType == .allow ? matches : !matches
+        switch filterType {
+        case .allow:
+            return urls.contains { url.contains($0) }
+        case .block:
+            return !urls.contains { url.contains($0) }
+        }
     }
 }

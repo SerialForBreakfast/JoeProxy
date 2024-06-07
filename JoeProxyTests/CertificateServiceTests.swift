@@ -9,41 +9,39 @@ import XCTest
 
 class CertificateServiceTests: XCTestCase {
     
-    var certificateService: MockCertificateService!
-    var opensslInstaller: MockOpenSSLInstaller!
+    var certificateService: CertificateService!
     
     override func setUpWithError() throws {
-        opensslInstaller = MockOpenSSLInstaller()
-        certificateService = MockCertificateService(opensslInstaller: opensslInstaller)
+        certificateService = CertificateService()
+        // Clean up any existing certificates before each test
+        try? FileManager.default.removeItem(at: certificateService.certificateURL)
+        try? FileManager.default.removeItem(at: certificateService.pemURL)
+        certificateService.checkCertificateExists()
     }
     
     override func tearDownWithError() throws {
+        // Clean up any certificates created during tests
+        try? FileManager.default.removeItem(at: certificateService.certificateURL)
+        try? FileManager.default.removeItem(at: certificateService.pemURL)
         certificateService = nil
-        opensslInstaller = nil
     }
     
-    func testGenerateCertificate() throws {
-        let expectation = self.expectation(description: "Generate Certificate")
-        
+    func testGenerateCertificate() {
         certificateService.generateCertificate()
         
-        DispatchQueue.global().asyncAfter(deadline: .now() + 1) {
-            XCTAssertTrue(self.certificateService.certificateExists, "Certificate should exist after generation")
-            XCTAssertNotNil(self.certificateService.certificateCreationDate, "Certificate creation date should not be nil")
+        // Wait for the certificate generation process to complete
+        let expectation = XCTestExpectation(description: "Wait for certificate generation")
+        DispatchQueue.global().asyncAfter(deadline: .now() + 5) {
             expectation.fulfill()
         }
+        wait(for: [expectation], timeout: 10)
         
-        waitForExpectations(timeout: 5, handler: nil)
-    }
-    
-    func testInstallOpenSSL() throws {
-        opensslInstaller.installOpenSSL()
-        XCTAssertTrue(opensslInstaller.installCalled, "Install OpenSSL should have been called")
-    }
-    
-    func testFindOpenSSL() throws {
-        let path = opensslInstaller.findOpenSSL()
-        XCTAssertTrue(opensslInstaller.findCalled, "Find OpenSSL should have been called")
-        XCTAssertEqual(path, "/mock/path/to/openssl", "Mock path should be returned")
+        // Check if the certificate and private key files exist
+        XCTAssertTrue(FileManager.default.fileExists(atPath: certificateService.certificateURL.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: certificateService.pemURL.path))
+        
+        // Check if the certificate exists in the service
+        XCTAssertTrue(certificateService.certificateExists)
+        XCTAssertNotNil(certificateService.certificateCreationDate)
     }
 }

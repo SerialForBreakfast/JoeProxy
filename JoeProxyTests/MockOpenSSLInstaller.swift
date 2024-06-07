@@ -9,17 +9,18 @@ import Foundation
 @testable import JoeProxy
 
 class MockOpenSSLInstaller: OpenSSLInstaller {
-    var installCalled = false
-    var findCalled = false
-    
-    override func installOpenSSL() {
-        installCalled = true
-        print("Mock OpenSSL installation called")
+    var shouldSucceed: Bool
+
+    init(shouldSucceed: Bool = true) {
+        self.shouldSucceed = shouldSucceed
     }
-    
-    override func findOpenSSL() -> String? {
-        findCalled = true
-        print("Mock OpenSSL find called")
-        return "/mock/path/to/openssl"
+
+    override func installOpenSSL() -> Bool {
+        print("Mock installation of OpenSSL. Should succeed: \(shouldSucceed)")
+        return shouldSucceed
+    }
+
+    override func shell(_ command: String) throws -> String {
+        return "Mock shell command executed: \(command)"
     }
 }
