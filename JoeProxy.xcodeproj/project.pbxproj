@@ -30,6 +30,7 @@
 		445A3CA22C1273E0008E68AE /* DefaultNetworkServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 445A3CA12C1273E0008E68AE /* DefaultNetworkServiceTests.swift */; };
 		445A3CA42C127BCB008E68AE /* FilteringCriteria.swift in Sources */ = {isa = PBXBuildFile; fileRef = 445A3CA32C127BCB008E68AE /* FilteringCriteria.swift */; };
 		445A3CA62C127BE5008E68AE /* FilteringService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 445A3CA52C127BE5008E68AE /* FilteringService.swift */; };
+		44F0A2782C12B8B400FC8160 /* CertificateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44F0A2772C12B8B400FC8160 /* CertificateService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -74,6 +75,7 @@
 		445A3CA12C1273E0008E68AE /* DefaultNetworkServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultNetworkServiceTests.swift; sourceTree = "<group>"; };
 		445A3CA32C127BCB008E68AE /* FilteringCriteria.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilteringCriteria.swift; sourceTree = "<group>"; };
 		445A3CA52C127BE5008E68AE /* FilteringService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilteringService.swift; sourceTree = "<group>"; };
+		44F0A2772C12B8B400FC8160 /* CertificateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertificateService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -108,6 +110,7 @@
 			isa = PBXGroup;
 			children = (
 				445A3C642C12647D008E68AE /* ContentView.swift */,
+				44F0A2772C12B8B400FC8160 /* CertificateService.swift */,
 				4402B6522C128F0100761AC5 /* LogView.swift */,
 			);
 			path = UI;
@@ -335,6 +338,7 @@
 				445A3CA42C127BCB008E68AE /* FilteringCriteria.swift in Sources */,
 				445A3CA62C127BE5008E68AE /* FilteringService.swift in Sources */,
 				445A3C632C12647D008E68AE /* JoeProxyApp.swift in Sources */,
+				44F0A2782C12B8B400FC8160 /* CertificateService.swift in Sources */,
 				4402B6502C128BBC00761AC5 /* SimpleHandler.swift in Sources */,
 				4402B6552C12901500761AC5 /* BasicConfigurationService.swift in Sources */,
 				4402B6532C128F0100761AC5 /* LogView.swift in Sources */,

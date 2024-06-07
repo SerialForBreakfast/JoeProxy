@@ -7,6 +7,8 @@ protocol NetworkingService {
     func stopServer() throws
 }
 
+import NIOSSL
+
 class DefaultNetworkingService: NetworkingService {
     private let configurationService: ConfigurationService
     private let filteringService: FilteringService
@@ -14,27 +16,25 @@ class DefaultNetworkingService: NetworkingService {
     private var group: MultiThreadedEventLoopGroup?
     private var channel: Channel?
     
-    init(configurationService: ConfigurationService, filteringService: FilteringService, loggingService: LoggingService) {
+    init(configurationService: ConfigurationService, filteringService: FilteringService, loggingService: LoggingService, group: MultiThreadedEventLoopGroup? = nil) {
         self.configurationService = configurationService
         self.filteringService = filteringService
         self.loggingService = loggingService
+        self.group = group
     }
     
     func startServer() throws {
         let group = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
         self.group = group
         
-        let sslContext = try NIOSSLContext(configuration: .makeServerConfiguration(
-            certificateChain: try NIOSSLCertificate.fromPEMFile("cert.pem").map { .certificate($0) },
-            privateKey: .file("key.pem")
-        ))
+        let sslContext = try NIOSSLContext(configuration: .makeClientConfiguration())
+        let sslHandler = try NIOSSLClientHandler(context: sslContext, serverHostname: nil)
         
         let bootstrap = ServerBootstrap(group: group)
             .serverChannelOption(ChannelOptions.backlog, value: 256)
             .serverChannelOption(ChannelOptions.socket(SocketOptionLevel(SOL_SOCKET), SO_REUSEADDR), value: 1)
             .childChannelInitializer { channel in
-                let sslHandler = try! NIOSSLServerHandler(context: sslContext)
-                return channel.pipeline.addHandler(sslHandler).flatMap {
+                channel.pipeline.addHandler(sslHandler).flatMap {
                     channel.pipeline.addHandler(SimpleHandler(filteringService: self.filteringService, loggingService: self.loggingService))
                 }
             }

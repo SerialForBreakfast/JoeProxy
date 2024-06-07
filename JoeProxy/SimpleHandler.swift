@@ -26,26 +26,23 @@ class SimpleHandler: ChannelInboundHandler {
         switch part {
         case .head(let request):
             let requestString = "\(request.method) \(request.uri)"
-            loggingService.logRequest(requestString, headers: request.headers.reduce(into: [:]) { $0[$1.name] = $1.value }, timestamp: Date())
-
-            let filterDecision = filteringService.shouldAllowRequest(url: requestString) ? "allowed" : "blocked"
+            loggingService.logRequest(request.uri, headers: request.headers.reduce(into: [String: String]()) { $0[$1.name] = $1.value }, timestamp: Date())
+            let filterDecision = filteringService.shouldAllowRequest(url: request.uri) ? "allowed" : "blocked"
             loggingService.log("Request \(filterDecision): \(requestString)", level: .info)
 
-            if filterDecision == "blocked" {
-                let responseHead = HTTPResponseHead(version: request.version, status: .forbidden)
-                context.write(wrapOutboundOut(.head(responseHead)), promise: nil)
-                context.writeAndFlush(wrapOutboundOut(.end(nil)), promise: nil)
-                return
-            }
+            let responseStatus: HTTPResponseStatus = filterDecision == "allowed" ? .ok : .forbidden
+            let responseBody: String = filterDecision == "allowed" ? "Request allowed: \(request.uri)" : "Request blocked: \(request.uri)"
+            var buffer = context.channel.allocator.buffer(capacity: responseBody.utf8.count)
+            buffer.writeString(responseBody)
 
-            // Forward request to the target server
-            forwardRequestToTargetServer(request: request, context: context)
-        case .body(let body):
-            // Forward body if necessary
-            context.write(wrapOutboundOut(.body(.byteBuffer(body))), promise: nil)
-        case .end:
-            // End of the request
-            context.writeAndFlush(wrapOutboundOut(.end(nil)), promise: nil)
+            var responseHead = HTTPResponseHead(version: request.version, status: responseStatus)
+            responseHead.headers.add(name: "Content-Length", value: "\(buffer.readableBytes)")
+
+            context.write(self.wrapOutboundOut(.head(responseHead)), promise: nil)
+            context.write(self.wrapOutboundOut(.body(.byteBuffer(buffer))), promise: nil)
+            context.writeAndFlush(self.wrapOutboundOut(.end(nil)), promise: nil)
+        case .body, .end:
+            break
         }
     }
 

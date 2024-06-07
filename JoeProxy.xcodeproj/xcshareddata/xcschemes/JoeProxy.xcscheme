@@ -40,6 +40,11 @@
                BlueprintName = "JoeProxyTests"
                ReferencedContainer = "container:JoeProxy.xcodeproj">
             </BuildableReference>
+            <SkippedTests>
+               <Test
+                  Identifier = "JoeProxyTests">
+               </Test>
+            </SkippedTests>
          </TestableReference>
          <TestableReference
             skipped = "YES"

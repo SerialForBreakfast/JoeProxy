@@ -41,3 +41,15 @@ class FilteringServiceTests: XCTestCase {
         XCTAssertTrue(filteringService.shouldAllowRequest(url: "https://other.com/test"))
     }
 }
+
+class MockFilteringService: FilteringService {
+    private let shouldAllow: Bool
+
+    init(shouldAllow: Bool) {
+        self.shouldAllow = shouldAllow
+    }
+
+    func shouldAllowRequest(url: String) -> Bool {
+        return shouldAllow
+    }
+}

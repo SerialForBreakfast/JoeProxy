@@ -6,6 +6,8 @@
 //
 
 import XCTest
+import Combine
+
 @testable import JoeProxy
 
 class LoggingServiceTests: XCTestCase {
@@ -50,4 +52,36 @@ class LoggingServiceTests: XCTestCase {
 class MockConfigurationService: ConfigurationService {
     var proxyPort: Int = 0
     var logLevel: LogLevel = .info
+}
+
+class MockLoggingService: LoggingService {
+    private(set) var logs: [String] = []
+
+    private let logsSubject = CurrentValueSubject<[String], Never>([])
+    var logsPublisher: AnyPublisher<[String], Never> {
+        logsSubject.eraseToAnyPublisher()
+    }
+
+    func logRequest(_ request: String, headers: [String: String], timestamp: Date) {
+        let formattedHeaders = headers.map { "\($0.key): \($0.value)" }.joined(separator: ", ")
+        let logMessage = "[REQUEST] \(timestamp) \(request) Headers: \(formattedHeaders)"
+        logs.append(logMessage)
+        logsSubject.send(logs)
+    }
+
+    func logResponse(_ response: String, statusCode: Int, timestamp: Date) {
+        let logMessage = "[RESPONSE] \(timestamp) \(response) Status: \(statusCode)"
+        logs.append(logMessage)
+        logsSubject.send(logs)
+    }
+
+    func log(_ message: String, level: LogLevel) {
+        let logMessage = "[\(level.rawValue.uppercased())] \(message)"
+        logs.append(logMessage)
+        logsSubject.send(logs)
+    }
+
+    func saveLogsToFile() {
+        // Mock implementation
+    }
 }

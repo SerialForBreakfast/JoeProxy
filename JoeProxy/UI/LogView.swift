@@ -22,7 +22,7 @@ class LogViewModel: ObservableObject {
             .store(in: &cancellables)
     }
     
-    func saveLogs() {
+    func saveLogs() { // Updated method name to saveLogs
         loggingService.saveLogsToFile()
     }
 }

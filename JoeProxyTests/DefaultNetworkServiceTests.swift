@@ -96,7 +96,6 @@ class DefaultNetworkingServiceTests: XCTestCase {
         XCTAssertTrue(receivedResponse, "Client did not receive response from server")
         XCTAssertNoThrow(try channel.finish())
     }
-    
 }
 
 // Mock Networking Service to avoid actual network operations
