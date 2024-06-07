@@ -31,11 +31,8 @@ struct LogView: View {
     @ObservedObject var viewModel: LogViewModel
     
     var body: some View {
-        NavigationView {
-            List(viewModel.logs, id: \.self) { log in
-                Text(log)
-            }
-            .navigationTitle("Network Logs")
+        List(viewModel.logs, id: \.self) { log in
+            Text(log)
         }
     }
 }
@@ -65,17 +62,18 @@ class MockLoggingService: LoggingService {
     func logRequest(_ request: String, headers: [String: String], timestamp: Date) {
         let formattedHeaders = headers.map { "\($0.key): \($0.value)" }.joined(separator: ", ")
         let logMessage = "[REQUEST] \(timestamp) \(request) Headers: \(formattedHeaders)"
-        log(logMessage, level: .info)
+        logsSubject.value.append(logMessage)
+        logsSubject.send(logsSubject.value)
     }
     
     func logResponse(_ response: String, statusCode: Int, timestamp: Date) {
         let logMessage = "[RESPONSE] \(timestamp) \(response) Status: \(statusCode)"
-        log(logMessage, level: .info)
+        logsSubject.value.append(logMessage)
+        logsSubject.send(logsSubject.value)
     }
     
     func log(_ message: String, level: LogLevel) {
-        let logMessage = "[\(level.rawValue.uppercased())] \(message)"
-        logsSubject.value.append(logMessage)
+        logsSubject.value.append("[\(level.rawValue.uppercased())] \(message)")
         logsSubject.send(logsSubject.value)
     }
     

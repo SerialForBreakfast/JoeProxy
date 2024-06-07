@@ -27,6 +27,7 @@ struct ContentView: View {
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView(loggingService: MockLoggingService())
+        let mockLoggingService = MockLoggingService()
+        ContentView(loggingService: mockLoggingService)
     }
 }

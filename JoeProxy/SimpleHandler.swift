@@ -25,23 +25,26 @@ class SimpleHandler: ChannelInboundHandler {
         switch part {
         case .head(let request):
             let requestString = "\(request.method) \(request.uri)"
-            loggingService.log("[REQUEST] \(requestString)", level: .info)
+            let headers = request.headers.reduce(into: [String: String]()) { $0[$1.name] = $1.value }
+            loggingService.logRequest(requestString, headers: headers, timestamp: Date())
             let filterDecision = filteringService.shouldAllowRequest(url: request.uri) ? "allowed" : "blocked"
             loggingService.log("Request \(filterDecision): \(requestString)", level: .info)
             
             if filterDecision == "blocked" {
+                let responseHead = HTTPResponseHead(version: request.version, status: .forbidden)
+                let response = HTTPServerResponsePart.head(responseHead)
+                context.write(self.wrapOutboundOut(response), promise: nil)
+                
                 var buffer = context.channel.allocator.buffer(capacity: 256)
                 buffer.writeString("Request blocked: \(request.uri)")
-                let responseHead = HTTPResponseHead(version: request.version, status: .forbidden)
-                context.write(wrapOutboundOut(.head(responseHead)), promise: nil)
-                context.write(wrapOutboundOut(.body(.byteBuffer(buffer))), promise: nil)
-                context.writeAndFlush(wrapOutboundOut(.end(nil)), promise: nil)
-                loggingService.log("[RESPONSE] \(requestString) Status: 403", level: .info)
-            } else {
-                // Additional processing if the request is allowed
+                context.write(self.wrapOutboundOut(.body(.byteBuffer(buffer))), promise: nil)
+                
+                context.writeAndFlush(self.wrapOutboundOut(.end(nil)), promise: nil)
+                return
             }
             
         case .body, .end:
+            // Handle body and end parts if needed
             break
         }
     }
