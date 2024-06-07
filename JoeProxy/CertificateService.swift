@@ -1,7 +1,7 @@
 import Foundation
 import Combine
 import Security
-
+import AppKit
 
 class CertificateService: ObservableObject {
     @Published var certificateExists: Bool = false
@@ -26,53 +26,61 @@ class CertificateService: ObservableObject {
         print("Document directory: \(documentDirectory)")
         print("Certificate URL: \(certificateURL)")
         print("PEM URL: \(pemURL)")
-        
+
         setup()
         checkCertificateExists()
     }
     
-    private func findOpenSSLPath() -> String? {
-        do {
-            let whichOpenSSL = try shell("which openssl")
-            if !whichOpenSSL.isEmpty {
-                return whichOpenSSL.trimmingCharacters(in: .whitespacesAndNewlines)
-            }
-        } catch {
-            print("Error finding OpenSSL with `which openssl`: \(error)")
-        }
-
-        if let homebrewPath = try? shell("brew --prefix openssl"), !homebrewPath.isEmpty {
-            return homebrewPath.trimmingCharacters(in: .whitespacesAndNewlines) + "/bin/openssl"
-        }
-
-        return nil
-    }
-
     func setup() {
-        print("Setting up OpenSSL path...")
         if let opensslPath = findOpenSSLPath() {
             self.opensslPath = opensslPath
-            print("OpenSSL found at path: \(opensslPath)")
+            print("OpenSSL found at path: \(self.opensslPath)")
         } else {
             print("OpenSSL not found. Please install OpenSSL via Homebrew.")
         }
     }
     
-    func whichOpenssl() -> String {
-        let output = (try? shell("which openssl"))?.trimmingCharacters(in: .whitespacesAndNewlines)
-        print("which openssl output: \(String(describing: output))")
-        return output ?? "/usr/local/bin/openssl"
+    func findOpenSSLPath() -> String? {
+        // Prioritize finding OpenSSL using 'which openssl'
+        if let opensslPath = try? shell("which openssl"), !opensslPath.isEmpty {
+            return opensslPath.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        
+        let paths = [
+            "/usr/local/bin/openssl",
+            "/usr/bin/openssl",
+            "/opt/homebrew/bin/openssl",
+            "/opt/local/bin/openssl"
+        ]
+        
+        for path in paths {
+            if FileManager.default.fileExists(atPath: path) {
+                return path
+            }
+        }
+        
+        if let homebrewPath = try? shell("brew --prefix openssl@3"), !homebrewPath.isEmpty {
+            let trimmedPath = homebrewPath.trimmingCharacters(in: .whitespacesAndNewlines) + "/bin/openssl"
+            if FileManager.default.fileExists(atPath: trimmedPath) {
+                return trimmedPath
+            }
+        }
+        
+        return nil
     }
     
     func checkCertificateExists() {
         let fileManager = FileManager.default
+        print("Checking if certificate and PEM files exist...")
         if fileManager.fileExists(atPath: certificateURL.path) && fileManager.fileExists(atPath: pemURL.path) {
+            print("Certificate and PEM files found.")
             self.certificateExists = true
             if let attributes = try? fileManager.attributesOfItem(atPath: certificateURL.path),
                let creationDate = attributes[.creationDate] as? Date {
                 self.certificateCreationDate = creationDate
             }
         } else {
+            print("Certificate and/or PEM files not found.")
             self.certificateExists = false
             self.certificateCreationDate = nil
         }
@@ -83,13 +91,11 @@ class CertificateService: ObservableObject {
             do {
                 print("Starting certificate generation...")
                 
-                // Check if OpenSSL exists at the specified path
                 guard FileManager.default.fileExists(atPath: self.opensslPath) else {
                     print("OpenSSL not found. Please install OpenSSL via Homebrew.")
                     return
                 }
                 
-                // Generate private key
                 let privateKeyProcess = Process()
                 privateKeyProcess.executableURL = URL(fileURLWithPath: self.opensslPath)
                 privateKeyProcess.arguments = ["genpkey", "-algorithm", "RSA", "-out", self.pemURL.path, "-pkeyopt", "rsa_keygen_bits:2048"]
@@ -104,7 +110,6 @@ class CertificateService: ObservableObject {
                 
                 print("Private key written to \(self.pemURL.path)")
                 
-                // Generate certificate
                 let certProcess = Process()
                 certProcess.executableURL = URL(fileURLWithPath: self.opensslPath)
                 certProcess.arguments = ["req", "-x509", "-new", "-nodes", "-key", self.pemURL.path, "-sha256", "-days", "365", "-out", self.certificateURL.path, "-subj", "/CN=Test/O=TestOrg/C=US"]
@@ -137,7 +142,7 @@ class CertificateService: ObservableObject {
         task.standardOutput = pipe
         task.standardError = pipe
         task.arguments = ["-c", command]
-        task.executableURL = URL(fileURLWithPath: "/bin/zsh") // Use zsh or /bin/bash for macOS
+        task.executableURL = self.shellExecutableURL()
         
         try task.run()
         
@@ -145,5 +150,23 @@ class CertificateService: ObservableObject {
         let output = String(data: data, encoding: .utf8)!
         
         return output
+    }
+    
+    private func shellExecutableURL() -> URL {
+        if FileManager.default.fileExists(atPath: "/bin/zsh") {
+            return URL(fileURLWithPath: "/bin/zsh")
+        } else {
+            return URL(fileURLWithPath: "/bin/bash")
+        }
+    }
+    
+    func openCertificateDirectory() {
+        let fileManager = FileManager.default
+        let urls = fileManager.urls(for: .documentDirectory, in: .userDomainMask)
+        guard let documentDirectory = urls.first else {
+            fatalError("Could not find document directory")
+        }
+        
+        NSWorkspace.shared.open(documentDirectory)
     }
 }
