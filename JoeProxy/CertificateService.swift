@@ -22,6 +22,10 @@ class CertificateService: ObservableObject {
         self.certificateURL = documentDirectory.appendingPathComponent("certificate.crt")
         self.pemURL = documentDirectory.appendingPathComponent("privateKey.pem")
         
+        print("Document directory: \(documentDirectory)")
+        print("Certificate URL: \(certificateURL)")
+        print("PEM URL: \(pemURL)")
+        
         setup()
         checkCertificateExists()
     }
@@ -39,8 +43,18 @@ class CertificateService: ObservableObject {
     }
     
     private func findOpenSSLPath() -> String? {
+        // Check using the shell command 'which openssl'
+        if let whichOutput = try? shell("which openssl"), !whichOutput.isEmpty {
+            let whichPath = whichOutput.trimmingCharacters(in: .whitespacesAndNewlines)
+            if FileManager.default.fileExists(atPath: whichPath) {
+                print("OpenSSL found using 'which' command at path: \(whichPath)")
+                return whichPath
+            }
+        }
+        
+        // Check using Homebrew
         do {
-            let homebrewPrefix = try shell("brew --prefix openssl@3")
+            let homebrewPrefix = try shell("/usr/local/bin/brew --prefix openssl@3")
             print("Homebrew prefix for OpenSSL: \(homebrewPrefix)")
             if !homebrewPrefix.isEmpty {
                 return homebrewPrefix.trimmingCharacters(in: .whitespacesAndNewlines) + "/bin/openssl"
@@ -49,6 +63,7 @@ class CertificateService: ObservableObject {
             print("Error finding OpenSSL path with Homebrew: \(error)")
         }
         
+        // Check standard paths
         let possiblePaths = [
             "/usr/local/bin/openssl",
             "/usr/bin/openssl",
