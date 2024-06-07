@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		4402B64E2C12891D00761AC5 /* FilteringServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4402B64D2C12891D00761AC5 /* FilteringServiceTests.swift */; };
 		4402B6502C128BBC00761AC5 /* SimpleHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4402B64F2C128BBC00761AC5 /* SimpleHandler.swift */; };
+		4402B6532C128F0100761AC5 /* LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4402B6522C128F0100761AC5 /* LogView.swift */; };
+		4402B6552C12901500761AC5 /* BasicConfigurationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4402B6542C12901500761AC5 /* BasicConfigurationService.swift */; };
 		445A3C632C12647D008E68AE /* JoeProxyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 445A3C622C12647D008E68AE /* JoeProxyApp.swift */; };
 		445A3C652C12647D008E68AE /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 445A3C642C12647D008E68AE /* ContentView.swift */; };
 		445A3C672C12647F008E68AE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 445A3C662C12647F008E68AE /* Assets.xcassets */; };
@@ -48,6 +50,8 @@
 /* Begin PBXFileReference section */
 		4402B64D2C12891D00761AC5 /* FilteringServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilteringServiceTests.swift; sourceTree = "<group>"; };
 		4402B64F2C128BBC00761AC5 /* SimpleHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleHandler.swift; sourceTree = "<group>"; };
+		4402B6522C128F0100761AC5 /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
+		4402B6542C12901500761AC5 /* BasicConfigurationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasicConfigurationService.swift; sourceTree = "<group>"; };
 		445A3C5F2C12647D008E68AE /* JoeProxy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = JoeProxy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		445A3C622C12647D008E68AE /* JoeProxyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoeProxyApp.swift; sourceTree = "<group>"; };
 		445A3C642C12647D008E68AE /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -96,6 +100,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4402B6512C128EF100761AC5 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				445A3C642C12647D008E68AE /* ContentView.swift */,
+				4402B6522C128F0100761AC5 /* LogView.swift */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
 		445A3C562C12647D008E68AE = {
 			isa = PBXGroup;
 			children = (
@@ -120,8 +133,9 @@
 		445A3C612C12647D008E68AE /* JoeProxy */ = {
 			isa = PBXGroup;
 			children = (
+				4402B6512C128EF100761AC5 /* UI */,
 				445A3C622C12647D008E68AE /* JoeProxyApp.swift */,
-				445A3C642C12647D008E68AE /* ContentView.swift */,
+				4402B6542C12901500761AC5 /* BasicConfigurationService.swift */,
 				445A3C8D2C126616008E68AE /* ConfigurationService.swift */,
 				445A3C8F2C126646008E68AE /* LoggingService.swift */,
 				445A3C932C126C3D008E68AE /* NetworkingService.swift */,
@@ -316,6 +330,8 @@
 				445A3CA62C127BE5008E68AE /* FilteringService.swift in Sources */,
 				445A3C632C12647D008E68AE /* JoeProxyApp.swift in Sources */,
 				4402B6502C128BBC00761AC5 /* SimpleHandler.swift in Sources */,
+				4402B6552C12901500761AC5 /* BasicConfigurationService.swift in Sources */,
+				4402B6532C128F0100761AC5 /* LogView.swift in Sources */,
 				445A3C902C126646008E68AE /* LoggingService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

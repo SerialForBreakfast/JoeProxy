@@ -11,7 +11,26 @@ import SwiftUI
 struct JoeProxyApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            let configurationService = BasicConfigurationService()
+            let filteringService = DefaultFilteringService(criteria: FilteringCriteria(urls: ["example.com"], filterType: .allow))
+            let loggingService = DefaultLoggingService(configurationService: configurationService)
+            let networkingService = DefaultNetworkingService(configurationService: configurationService, filteringService: filteringService, loggingService: loggingService)
+            
+            ContentView(loggingService: loggingService)
+                .onAppear {
+                    do {
+                        try networkingService.startServer()
+                    } catch {
+                        loggingService.log("Failed to start server: \(error)", level: .error)
+                    }
+                }
+                .onDisappear {
+                    do {
+                        try networkingService.stopServer()
+                    } catch {
+                        loggingService.log("Failed to stop server: \(error)", level: .error)
+                    }
+                }
         }
     }
 }
