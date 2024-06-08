@@ -2,58 +2,33 @@ import SwiftUI
 
 @main
 struct JoeProxyApp: App {
-    @State private var certificateService = CertificateService()
-    @State private var networkingService: DefaultNetworkingService
-    @State private var loggingService: DefaultLoggingService
-
-    init() {
-        let configurationService = BasicConfigurationService()
-        let filteringCriteria = FilteringCriteria(urls: ["example.com"], filterType: .allow)
-        let filteringService = DefaultFilteringService(criteria: filteringCriteria)
-        let loggingService = DefaultLoggingService(configurationService: configurationService)
-        let certificateService = CertificateService()
-        let networkingService = DefaultNetworkingService(configurationService: configurationService, filteringService: filteringService, loggingService: loggingService, certificateService: certificateService)
-        _loggingService = State(initialValue: loggingService)
-        _networkingService = State(initialValue: networkingService)
-        _certificateService = State(initialValue: certificateService)
-    }
+    @StateObject private var certificateService = CertificateService()
+    private let configurationService = BasicConfigurationService()
+    private let filteringService = DefaultFilteringService(criteria: FilteringCriteria(urls: ["example.com"], filterType: .allow))
+    private let loggingService = DefaultLoggingService(configurationService: BasicConfigurationService())
+    private let networkingService = DefaultNetworkingService(configurationService: BasicConfigurationService(), filteringService: DefaultFilteringService(criteria: FilteringCriteria(urls: ["example.com"], filterType: .allow)), loggingService: DefaultLoggingService(configurationService: BasicConfigurationService()), certificateService: CertificateService())
+    @StateObject private var viewModel = LogViewModel(loggingService: DefaultLoggingService(configurationService: BasicConfigurationService()))
+    @StateObject private var networkingViewModel = NetworkingServiceViewModel(networkingService: DefaultNetworkingService(configurationService: BasicConfigurationService(), filteringService: DefaultFilteringService(criteria: FilteringCriteria(urls: ["example.com"], filterType: .allow)), loggingService: DefaultLoggingService(configurationService: BasicConfigurationService()), certificateService: CertificateService()))
 
     var body: some Scene {
         WindowGroup {
-            ContentView(loggingService: loggingService)
-                .onAppear {
-                    do {
-                        try networkingService.startServer()
-                    } catch {
-                        loggingService.log("Failed to start server: \(error)", level: .error)
-                    }
+            ContentView(
+                viewModel: viewModel,
+                certificateService: certificateService,
+                networkingViewModel: networkingViewModel
+            )
+            .onAppear {
+                do {
+                    try networkingViewModel.startServer()
+                } catch {
+                    loggingService.log("Failed to start server: \(error)", level: .error)
                 }
-                .onDisappear {
-                    do {
-                        try networkingService.stopServer()
-                    } catch {
-                        loggingService.log("Failed to stop server: \(error)", level: .error)
-                    }
-                }
-        }
-        .commands {
-            CommandMenu("Actions") {
-                Button("Generate Certificate") {
-                    certificateService.generateCertificate()
-                }
-                Button("Start Server") {
-                    do {
-                        try networkingService.startServer()
-                    } catch {
-                        loggingService.log("Failed to start server: \(error)", level: .error)
-                    }
-                }
-                Button("Stop Server") {
-                    do {
-                        try networkingService.stopServer()
-                    } catch {
-                        loggingService.log("Failed to stop server: \(error)", level: .error)
-                    }
+            }
+            .onDisappear {
+                do {
+                    try networkingViewModel.stopServer()
+                } catch {
+                    loggingService.log("Failed to stop server: \(error)", level: .error)
                 }
             }
         }

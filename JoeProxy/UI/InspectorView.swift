@@ -9,19 +9,19 @@ import Foundation
 import SwiftUI
 
 struct InspectorView: View {
-    @Binding var selectedLog: LogEntry?
-
+    let logEntry: LogEntry
+    
     var body: some View {
         VStack {
-            if let log = selectedLog {
-                Text("Timestamp: \(log.timestamp)")
-                Text("Request: \(log.request)")
-                Text("Headers: \(log.headers)")
-                Text("Response: \(log.response)")
-                Text("Status Code: \(log.statusCode)")
-            } else {
-                Text("Select a log to view details")
-            }
+            Text("Inspector")
+                .font(.largeTitle)
+                .padding()
+            
+            Text("Timestamp: \(logEntry.timestamp)")
+            Text("Request: \(logEntry.request)")
+            Text("Headers: \(logEntry.headers)")
+            Text("Response: \(logEntry.response)")
+            Text("Status Code: \(logEntry.statusCode)")
         }
         .padding()
     }

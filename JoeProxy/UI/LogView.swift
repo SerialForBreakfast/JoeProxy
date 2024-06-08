@@ -11,29 +11,35 @@ import Foundation
 
 class LogViewModel: ObservableObject {
     @Published var logs: [LogEntry] = []
-    private var loggingService: LoggingService
-    private var cancellables = Set<AnyCancellable>()
-    
+    private let loggingService: LoggingService
+
     init(loggingService: LoggingService) {
         self.loggingService = loggingService
-        loggingService.logsPublisher
-            .map { logMessages in
-                // Convert log messages to LogEntry instances
-                logMessages.map { logMessage in
-                    LogEntry(timestamp: Date(), request: logMessage, headers: "", response: "", statusCode: 200) // Adjust fields as needed
-                }
-            }
-            .assign(to: &$logs)
+        setupBindings()
     }
-    
-    func saveLogs() {
+
+    private func setupBindings() {
+        loggingService.logsPublisher
+            .sink { [weak self] logs in
+                self?.logs = logs.map { LogEntry(timestamp: Date(), request: $0, headers: "", response: "", statusCode: 200) } // Update as necessary
+            }
+            .store(in: &cancellables)
+    }
+
+    func saveLogsToFile() {
         loggingService.saveLogsToFile()
     }
+
+    private var cancellables = Set<AnyCancellable>()
 }
+
+import SwiftUI
 
 struct LogView: View {
     @ObservedObject var viewModel: LogViewModel
     @State private var searchText = ""
+    @State private var isPaused = false
+    @State private var queuedLogs: [LogEntry] = []
 
     var filteredLogs: [LogEntry] {
         if searchText.isEmpty {
@@ -45,8 +51,20 @@ struct LogView: View {
 
     var body: some View {
         VStack {
-            TextField("Search logs...", text: $searchText)
+            HStack {
+                TextField("Search logs...", text: $searchText)
+                    .padding()
+                
+                Button(isPaused ? "Resume" : "Pause") {
+                    isPaused.toggle()
+                    if !isPaused {
+                        viewModel.logs.append(contentsOf: queuedLogs)
+                        queuedLogs.removeAll()
+                    }
+                }
                 .padding()
+            }
+            
             Table(filteredLogs) {
                 TableColumn("Timestamp") { log in
                     Text(log.timestamp, style: .date)
@@ -61,6 +79,11 @@ struct LogView: View {
             .tableStyle(InsetTableStyle()) // Optional, to add table style
         }
         .padding()
+        .onReceive(viewModel.$logs) { logs in
+            if isPaused {
+                queuedLogs.append(contentsOf: logs)
+            }
+        }
     }
 }
 

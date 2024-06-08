@@ -1,22 +1,26 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var viewModel: LogViewModel
-    @StateObject private var certificateService = CertificateService()
+    @ObservedObject var viewModel: LogViewModel
+    @ObservedObject var certificateService: CertificateService
+    @ObservedObject var networkingViewModel: NetworkingServiceViewModel
     
-    init(loggingService: LoggingService) {
-        _viewModel = StateObject(wrappedValue: LogViewModel(loggingService: loggingService))
-    }
+    @State private var showingNetworkInfo = false
+    @State private var showingInspector = false
+    @State private var selectedLogEntry: LogEntry?
     
     var body: some View {
         VStack {
-            if certificateService.certificateExists, let creationDate = certificateService.certificateCreationDate {
-                Text("Certificate exists, created on \(creationDate)")
-            } else {
-                Text("No certificate found")
-            }
-            
             HStack {
+                if certificateService.certificateExists {
+                    Text("Certificate exists, created on \(certificateService.certificateCreationDate ?? Date())")
+                    Button("Open Certificate Directory") {
+                        NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: certificateService.certificateURL.deletingLastPathComponent().path)
+                    }
+                } else {
+                    Text("No certificate found")
+                }
+
                 Button("Generate Certificate") {
                     do {
                         try certificateService.generateCertificate()
@@ -25,24 +29,32 @@ struct ContentView: View {
                     }
                 }
                 .padding()
-                
-                if certificateService.certificateExists {
-                    Button("Open Certificate Directory") {
-                        let url = certificateService.certificateURL.deletingLastPathComponent()
-                        NSWorkspace.shared.open(url)
-                    }
-                    .padding()
-                }
-            }
 
+                Button(networkingViewModel.isServerRunning ? "Stop Server" : "Start Server") {
+                    networkingViewModel.isServerRunning ? networkingViewModel.stopServer() : networkingViewModel.startServer()
+                }
+                .padding()
+            }
+            
             LogView(viewModel: viewModel)
             Button("Save Logs") {
-                viewModel.saveLogs()
+                viewModel.saveLogsToFile() // Ensure this method exists in LogViewModel
             }
             .padding()
+            
+            Button("Network Information") {
+                showingNetworkInfo.toggle()
+            }
+            .padding()
+            .sheet(isPresented: $showingNetworkInfo) {
+                NetworkInfoView()
+            }
         }
         .onAppear {
             certificateService.checkCertificateExists()
+        }
+        .sheet(item: $selectedLogEntry) { logEntry in
+            InspectorView(logEntry: logEntry)
         }
     }
 }
@@ -50,6 +62,9 @@ struct ContentView: View {
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         let mockLoggingService = MockLoggingService()
-        ContentView(loggingService: mockLoggingService)
+        let mockCertificateService = CertificateService()
+        let mockNetworkingService = DefaultNetworkingService(configurationService: BasicConfigurationService(), filteringService: DefaultFilteringService(criteria: FilteringCriteria(urls: ["example.com"], filterType: .allow)), loggingService: mockLoggingService, certificateService: mockCertificateService)
+        
+        ContentView(viewModel: LogViewModel(loggingService: mockLoggingService), certificateService: mockCertificateService, networkingViewModel: NetworkingServiceViewModel(networkingService: mockNetworkingService))
     }
 }
