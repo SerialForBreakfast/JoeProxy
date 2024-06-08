@@ -8,7 +8,7 @@ struct ContentView: View {
     @State private var showingNetworkInfo = false
     @State private var showingInspector = false
     @State private var selectedLogEntry: LogEntry?
-    
+
     var body: some View {
         VStack {
             HStack {
@@ -35,26 +35,34 @@ struct ContentView: View {
                 }
                 .padding()
             }
-            
-            LogView(viewModel: viewModel)
-            Button("Save Logs") {
-                viewModel.saveLogsToFile()
-            }
-            .padding()
-            
-            Button("Network Information") {
-                showingNetworkInfo.toggle()
-            }
-            .padding()
-            .sheet(isPresented: $showingNetworkInfo) {
-                NetworkInfoView()
+
+            HStack {
+                VStack {
+                    LogView(viewModel: viewModel, selectedLogEntry: $selectedLogEntry)
+                    Button("Save Logs") {
+                        viewModel.saveLogsToFile()
+                    }
+                    .padding()
+                    
+                    Button("Network Information") {
+                        showingNetworkInfo.toggle()
+                    }
+                    .padding()
+                    .sheet(isPresented: $showingNetworkInfo) {
+                        NetworkInfoView()
+                    }
+                }
+                if let logEntry = selectedLogEntry {
+                    InspectorView(logEntry: logEntry)
+                        .frame(width: 300)
+                        .padding()
+                }
             }
         }
         .onAppear {
             viewModel.loadLogs()
         }
         .onReceive(viewModel.logsPublisher) { logs in
-            // Automatically select the first log entry if available
             if selectedLogEntry == nil, let firstLog = logs.first {
                 selectedLogEntry = firstLog
             }

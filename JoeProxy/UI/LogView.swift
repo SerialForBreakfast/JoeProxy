@@ -12,7 +12,8 @@ import Foundation
 class LogViewModel: ObservableObject {
     @Published var logs: [LogEntry] = []
     private let loggingService: LoggingService
-    
+    private let logsSubject = CurrentValueSubject<[LogEntry], Never>([])
+
     private var cancellables: Set<AnyCancellable> = []
     var logsPublisher: AnyPublisher<[LogEntry], Never> {
         $logs.eraseToAnyPublisher()
@@ -40,6 +41,7 @@ class LogViewModel: ObservableObject {
                 LogEntry(timestamp: Date().addingTimeInterval(-180), request: "DELETE /api/data/1", headers: "Host: example.com\nAuthorization: Bearer token", response: "204 No Content", statusCode: 204),
                 LogEntry(timestamp: Date().addingTimeInterval(-240), request: "PUT /api/data/1", headers: "Host: example.com\nContent-Type: application/json", response: "200 OK", statusCode: 200)
             ]
+        logsSubject.send(logs)
         }
 
     
@@ -49,13 +51,12 @@ class LogViewModel: ObservableObject {
     
 }
 
-import SwiftUI
-
 struct LogView: View {
     @ObservedObject var viewModel: LogViewModel
     @State private var searchText = ""
     @State private var isPaused = false
     @State private var queuedLogs: [LogEntry] = []
+    @Binding var selectedLogEntry: LogEntry?
     
     var filteredLogs: [LogEntry] {
         if searchText.isEmpty {
@@ -113,8 +114,10 @@ struct LogEntry: Identifiable {
 }
 
 struct LogView_Previews: PreviewProvider {
+    @State static var selectedLogEntry: LogEntry? = nil
+
     static var previews: some View {
-        LogView(viewModel: LogViewModel(loggingService: MockLoggingService()))
+        LogView(viewModel: LogViewModel(loggingService: MockLoggingService()), selectedLogEntry: $selectedLogEntry)
     }
 }
 
