@@ -3,42 +3,35 @@ import NIO
 import NIOHTTP1
 @testable import JoeProxy
 
-class DefaultNetworkingServiceTests: XCTestCase {
-    
+final class DefaultNetworkingServiceTests: XCTestCase {
+
     var networkingService: MockDefaultNetworkingService!
     var configurationService: MockDefaultNetworkingConfigurationService!
+    var certificateService: MockCertificateService!
     
     override func setUpWithError() throws {
         configurationService = MockDefaultNetworkingConfigurationService()
         configurationService.proxyPort = 8081 // Use a non-restricted port
+        certificateService = MockCertificateService()
     }
     
     override func tearDownWithError() throws {
         try? networkingService.stopServer() // Use try? to safely attempt stopping the server
         networkingService = nil
         configurationService = nil
-    }
-    
-    func testStartAndStopServer() throws {
-        let criteria = FilteringCriteria(urls: ["example.com"], filterType: .allow)
-        let filteringService = DefaultFilteringService(criteria: criteria)
-        let loggingService: LoggingService = DefaultLoggingService(configurationService: configurationService) as LoggingService // Ensure conformance
-        networkingService = MockDefaultNetworkingService(configurationService: configurationService, filteringService: filteringService, loggingService: loggingService)
-        
-        XCTAssertNoThrow(try networkingService.startServer())
-        XCTAssertNoThrow(try networkingService.stopServer())
+        certificateService = nil
     }
 
-    
     func testNetworkingServiceWithAllowListFiltering() throws {
         let criteria = FilteringCriteria(urls: ["example.com"], filterType: .allow)
         let filteringService = DefaultFilteringService(criteria: criteria)
-        let loggingService: DefaultLoggingService = DefaultLoggingService(configurationService: configurationService)
-        networkingService = MockDefaultNetworkingService(configurationService: configurationService, filteringService: filteringService, loggingService: loggingService as LoggingService)
-        
+        let loggingService = DefaultLoggingService(configurationService: configurationService)
+        networkingService = MockDefaultNetworkingService(configurationService: configurationService, filteringService: filteringService, loggingService: loggingService, certificateService: certificateService)
+
+        XCTAssertNoThrow(try networkingService.startServer())
+
         let channel = EmbeddedChannel(handler: SimpleHandler(filteringService: filteringService, loggingService: loggingService))
-        
-        // Simulate an HTTP request
+
         let requestHead = HTTPRequestHead(version: HTTPVersion(major: 1, minor: 1), method: .GET, uri: "https://example.com/test")
         XCTAssertNoThrow(try channel.writeInbound(HTTPServerRequestPart.head(requestHead)))
         
@@ -46,89 +39,86 @@ class DefaultNetworkingServiceTests: XCTestCase {
         buffer.writeString("")
         XCTAssertNoThrow(try channel.writeInbound(HTTPServerRequestPart.body(buffer)))
         
+
         XCTAssertNoThrow(try channel.writeInbound(HTTPServerRequestPart.end(nil)))
-        
-        // Read the responses (if any)
-        while let _ = try channel.readOutbound(as: HTTPServerResponsePart.self) {
-            // Process the response parts if necessary
+
+        // Read the responses
+        var responseParts: [HTTPServerResponsePart] = []
+        while let part = try channel.readOutbound(as: HTTPServerResponsePart.self) {
+            responseParts.append(part)
         }
-        
-        // Close the channel
-        XCTAssertNoThrow(try channel.close().wait())
+
+        guard let responseHead = responseParts.first(where: {
+            if case .head = $0 {
+                return true
+            }
+            return false
+        }) else {
+            XCTFail("No response head received")
+            return
+        }
+
+        switch responseHead {
+        case .head(let head):
+            XCTAssertEqual(head.status, .ok)
+        default:
+            XCTFail("Unexpected response part received")
+        }
     }
 
     func testNetworkingServiceWithBlockListFiltering() throws {
         let criteria = FilteringCriteria(urls: ["example.com"], filterType: .block)
         let filteringService = DefaultFilteringService(criteria: criteria)
-        let loggingService: DefaultLoggingService = DefaultLoggingService(configurationService: configurationService)
-        networkingService = MockDefaultNetworkingService(configurationService: configurationService, filteringService: filteringService, loggingService: loggingService as LoggingService)
-        
+        let loggingService = DefaultLoggingService(configurationService: configurationService)
+        networkingService = MockDefaultNetworkingService(configurationService: configurationService, filteringService: filteringService, loggingService: loggingService, certificateService: certificateService)
+
+        XCTAssertNoThrow(try networkingService.startServer())
+
         let channel = EmbeddedChannel(handler: SimpleHandler(filteringService: filteringService, loggingService: loggingService))
 
-        // Simulate an HTTP request
         let requestHead = HTTPRequestHead(version: HTTPVersion(major: 1, minor: 1), method: .GET, uri: "https://example.com/test")
         XCTAssertNoThrow(try channel.writeInbound(HTTPServerRequestPart.head(requestHead)))
-        
+
         var buffer = channel.allocator.buffer(capacity: 0)
         buffer.writeString("")
         XCTAssertNoThrow(try channel.writeInbound(HTTPServerRequestPart.body(buffer)))
-        
+
         XCTAssertNoThrow(try channel.writeInbound(HTTPServerRequestPart.end(nil)))
-        
-        // Read the response
+
+        // Read the responses
+        var responseParts: [HTTPServerResponsePart] = []
+        while let part = try channel.readOutbound(as: HTTPServerResponsePart.self) {
+            responseParts.append(part)
+        }
+
+        guard let responseHead = responseParts.first(where: {
+            if case .head = $0 {
+                return true
+            }
+            return false
+        }) else {
+            XCTFail("No response head received")
+            return
+        }
+
+        switch responseHead {
+        case .head(let head):
+            XCTAssertEqual(head.status, .forbidden)
+        default:
+            XCTFail("Unexpected response part received")
+        }
+
         var receivedResponse = false
-        while let responsePart = try channel.readOutbound(as: HTTPServerResponsePart.self) {
-            switch responsePart {
-            case .head(let responseHead):
-                XCTAssertEqual(responseHead.status, .forbidden) // Ensure correct status type
-                receivedResponse = true
-            case .body(let responseBody):
-                if case .byteBuffer(let byteBuffer) = responseBody {
-                    let responseData = byteBuffer.getString(at: 0, length: byteBuffer.readableBytes)
+        for part in responseParts {
+            if case .body(let buffer) = part {
+                if case .byteBuffer(let byteBuffer) = buffer {
+                    let responseData = byteBuffer.getString(at: byteBuffer.readerIndex, length: byteBuffer.readableBytes)
                     XCTAssertEqual(responseData, "Request blocked: https://example.com/test")
-                } else {
-                    XCTFail("Expected ByteBuffer in response body")
+                    receivedResponse = true
                 }
-            case .end:
-                break
             }
         }
-        
+
         XCTAssertTrue(receivedResponse, "Client did not receive response from server")
-        XCTAssertNoThrow(try channel.finish())
     }
-}
-
-// Mock Networking Service to avoid actual network operations
-class MockDefaultNetworkingService: NetworkingService {
-    private let configurationService: ConfigurationService
-    private let filteringService: FilteringService
-    private let loggingService: LoggingService
-    private var isServerRunning = false
-    
-    init(configurationService: ConfigurationService, filteringService: FilteringService, loggingService: LoggingService) {
-        self.configurationService = configurationService
-        self.filteringService = filteringService
-        self.loggingService = loggingService
-    }
-    
-    func startServer() throws {
-        guard !isServerRunning else { throw NSError(domain: "Server already running", code: 1, userInfo: nil) }
-        isServerRunning = true
-        print("Mock server started on port \(configurationService.proxyPort)")
-    }
-    
-    func stopServer() throws {
-        guard isServerRunning else { throw NSError(domain: "Server not running", code: 1, userInfo: nil) }
-        isServerRunning = false
-        print("Mock server stopped.")
-    }
-}
-
-// Mock ConfigurationService for testing purposes
-class MockDefaultNetworkingConfigurationService: ConfigurationService {
-    var proxyPort: Int = 8081 // Use a non-restricted port
-    var logLevel: LogLevel = .info
-
-    // Add missing properties and methods to conform to ConfigurationService
 }

@@ -1,0 +1,40 @@
+{
+  "configurations" : [
+    {
+      "id" : "644AAEB7-21A7-440F-9949-6056954F177A",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:JoeProxy.xcodeproj",
+      "identifier" : "445A3C5E2C12647D008E68AE",
+      "name" : "JoeProxy"
+    }
+  },
+  "testTargets" : [
+    {
+      "skippedTests" : [
+        "JoeProxyTests"
+      ],
+      "target" : {
+        "containerPath" : "container:JoeProxy.xcodeproj",
+        "identifier" : "445A3C6F2C12647F008E68AE",
+        "name" : "JoeProxyTests"
+      }
+    },
+    {
+      "enabled" : false,
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:JoeProxy.xcodeproj",
+        "identifier" : "445A3C792C12647F008E68AE",
+        "name" : "JoeProxyUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

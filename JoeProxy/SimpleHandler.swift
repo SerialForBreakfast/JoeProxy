@@ -9,7 +9,7 @@ import NIO
 import NIOHTTP1
 import NIOSSL
 
-class SimpleHandler: ChannelInboundHandler {
+final class SimpleHandler: ChannelInboundHandler {
     typealias InboundIn = HTTPServerRequestPart
     typealias OutboundOut = HTTPServerResponsePart
 
@@ -46,13 +46,12 @@ class SimpleHandler: ChannelInboundHandler {
                 print("Allowed response sent")
             }
         case .body, .end:
-            // Handle body and end parts if needed
             break
         }
     }
 
     func errorCaught(context: ChannelHandlerContext, error: Error) {
-        loggingService.log("Error: \(error)", level: .error)
+        print("SimpleHandler encountered error: \(error)")
         context.close(promise: nil)
     }
 }

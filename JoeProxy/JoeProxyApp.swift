@@ -15,7 +15,8 @@ struct JoeProxyApp: App {
             let filteringCriteria = FilteringCriteria(urls: ["example.com"], filterType: .allow)
             let filteringService = DefaultFilteringService(criteria: filteringCriteria)
             let loggingService = DefaultLoggingService(configurationService: configurationService)
-            let networkingService = DefaultNetworkingService(configurationService: configurationService, filteringService: filteringService, loggingService: loggingService)
+            let certificateService = CertificateService()
+            let networkingService = DefaultNetworkingService(configurationService: configurationService, filteringService: filteringService, loggingService: loggingService, certificateService: certificateService)
             
             ContentView(loggingService: loggingService)
                 .onAppear {

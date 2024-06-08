@@ -13,39 +13,71 @@ class DefaultNetworkingService: NetworkingService {
     private let loggingService: LoggingService
     private var group: MultiThreadedEventLoopGroup?
     private var channel: Channel?
-    
-    init(configurationService: ConfigurationService, filteringService: FilteringService, loggingService: LoggingService) {
+    private let certificateService: CertificateService
+
+    init(configurationService: ConfigurationService, filteringService: FilteringService, loggingService: LoggingService, certificateService: CertificateService) {
         self.configurationService = configurationService
         self.filteringService = filteringService
         self.loggingService = loggingService
+        self.certificateService = certificateService
     }
-    
+
     func startServer() throws {
-        let group = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
-        self.group = group
+        print("Starting SSL server setup...")
         
-        let sslContext = try NIOSSLContext(configuration: .makeClientConfiguration())
-        let sslHandler = try NIOSSLClientHandler(context: sslContext, serverHostname: nil)
+        // Ensure the certificate and PEM files exist
+        if !FileManager.default.fileExists(atPath: certificateService.certificateURL.path) || !FileManager.default.fileExists(atPath: certificateService.pemURL.path) {
+            print("Certificate and/or PEM files are missing at paths:")
+            print("Certificate path: \(certificateService.certificateURL.path)")
+            print("PEM path: \(certificateService.pemURL.path)")
+            return
+        }
+
+        let certificateURL = certificateService.certificateURL
+        let pemURL = certificateService.pemURL
+        print("Certificate path: \(certificateURL)")
+        print("PEM path: \(pemURL)")
+
+        // Create SSL context
+        let sslContext: NIOSSLContext
+        do {
+            let certChain = try NIOSSLCertificate.fromPEMFile(certificateURL.path)
+            let key = try NIOSSLPrivateKey(file: pemURL.path, format: .pem)
+            let tlsConfig = TLSConfiguration.forServer(certificateChain: certChain.map { .certificate($0) }, privateKey: .privateKey(key))
+            sslContext = try NIOSSLContext(configuration: tlsConfig)
+            print("SSL context created successfully.")
+        } catch {
+            print("Failed to create SSL context: \(error)")
+            return
+        }
         
-        let bootstrap = ServerBootstrap(group: group)
+        group = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
+        
+        let bootstrap = ServerBootstrap(group: group!)
             .serverChannelOption(ChannelOptions.backlog, value: 256)
-            .serverChannelOption(ChannelOptions.socket(SocketOptionLevel(SOL_SOCKET), SO_REUSEADDR), value: 1)
+            .serverChannelOption(ChannelOptions.socketOption(.so_reuseaddr), value: 1)
             .childChannelInitializer { channel in
-                channel.pipeline.addHandler(sslHandler).flatMap {
-                    channel.pipeline.addHandler(SimpleHandler(filteringService: self.filteringService, loggingService: self.loggingService))
+                print("Initializing child channel...")
+                return channel.pipeline.addHandler(NIOSSLServerHandler(context: sslContext)).flatMap {
+                    channel.pipeline.addHandler(SSLHandler(filteringService: self.filteringService, loggingService: self.loggingService))
                 }
             }
             .childChannelOption(ChannelOptions.socket(IPPROTO_TCP, TCP_NODELAY), value: 1)
             .childChannelOption(ChannelOptions.maxMessagesPerRead, value: 16)
             .childChannelOption(ChannelOptions.recvAllocator, value: AdaptiveRecvByteBufferAllocator())
         
-        self.channel = try bootstrap.bind(host: "localhost", port: configurationService.proxyPort).wait()
-        print("Server started and listening on \(String(describing: channel?.localAddress))")
+        do {
+            channel = try bootstrap.bind(host: "localhost", port: 8443).wait() // Change to port 8443
+            print("Server started and listening on \(String(describing: channel?.localAddress))")
+        } catch {
+            print("Failed to start server: \(error)")
+        }
     }
-    
+
     func stopServer() throws {
-        try self.channel?.close().wait()
-        try self.group?.syncShutdownGracefully()
+        print("Stopping SSL server...")
+        try channel?.close().wait()
+        try group?.syncShutdownGracefully()
         print("Server stopped.")
     }
 }
