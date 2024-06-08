@@ -38,7 +38,7 @@ struct ContentView: View {
             
             LogView(viewModel: viewModel)
             Button("Save Logs") {
-                viewModel.saveLogsToFile() // Ensure this method exists in LogViewModel
+                viewModel.saveLogsToFile()
             }
             .padding()
             
@@ -51,20 +51,13 @@ struct ContentView: View {
             }
         }
         .onAppear {
-            certificateService.checkCertificateExists()
+            viewModel.loadLogs()
         }
-        .sheet(item: $selectedLogEntry) { logEntry in
-            InspectorView(logEntry: logEntry)
+        .onReceive(viewModel.logsPublisher) { logs in
+            // Automatically select the first log entry if available
+            if selectedLogEntry == nil, let firstLog = logs.first {
+                selectedLogEntry = firstLog
+            }
         }
-    }
-}
-
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        let mockLoggingService = MockLoggingService()
-        let mockCertificateService = CertificateService()
-        let mockNetworkingService = DefaultNetworkingService(configurationService: BasicConfigurationService(), filteringService: DefaultFilteringService(criteria: FilteringCriteria(urls: ["example.com"], filterType: .allow)), loggingService: mockLoggingService, certificateService: mockCertificateService)
-        
-        ContentView(viewModel: LogViewModel(loggingService: mockLoggingService), certificateService: mockCertificateService, networkingViewModel: NetworkingServiceViewModel(networkingService: mockNetworkingService))
     }
 }

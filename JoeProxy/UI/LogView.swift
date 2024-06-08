@@ -12,12 +12,17 @@ import Foundation
 class LogViewModel: ObservableObject {
     @Published var logs: [LogEntry] = []
     private let loggingService: LoggingService
-
+    
+    private var cancellables: Set<AnyCancellable> = []
+    var logsPublisher: AnyPublisher<[LogEntry], Never> {
+        $logs.eraseToAnyPublisher()
+    }
+    
     init(loggingService: LoggingService) {
         self.loggingService = loggingService
         setupBindings()
     }
-
+    
     private func setupBindings() {
         loggingService.logsPublisher
             .sink { [weak self] logs in
@@ -25,12 +30,23 @@ class LogViewModel: ObservableObject {
             }
             .store(in: &cancellables)
     }
+    
+    func loadLogs() {
+            // Implement logic to load logs
+            logs = [
+                LogEntry(timestamp: Date(), request: "GET /index.html", headers: "Host: example.com\nUser-Agent: TestAgent", response: "200 OK", statusCode: 200),
+                LogEntry(timestamp: Date().addingTimeInterval(-60), request: "POST /api/data", headers: "Host: example.com\nContent-Type: application/json", response: "201 Created", statusCode: 201),
+                LogEntry(timestamp: Date().addingTimeInterval(-120), request: "GET /notfound.html", headers: "Host: example.com\nUser-Agent: TestAgent", response: "404 Not Found", statusCode: 404),
+                LogEntry(timestamp: Date().addingTimeInterval(-180), request: "DELETE /api/data/1", headers: "Host: example.com\nAuthorization: Bearer token", response: "204 No Content", statusCode: 204),
+                LogEntry(timestamp: Date().addingTimeInterval(-240), request: "PUT /api/data/1", headers: "Host: example.com\nContent-Type: application/json", response: "200 OK", statusCode: 200)
+            ]
+        }
 
+    
     func saveLogsToFile() {
         loggingService.saveLogsToFile()
     }
-
-    private var cancellables = Set<AnyCancellable>()
+    
 }
 
 import SwiftUI
@@ -40,7 +56,7 @@ struct LogView: View {
     @State private var searchText = ""
     @State private var isPaused = false
     @State private var queuedLogs: [LogEntry] = []
-
+    
     var filteredLogs: [LogEntry] {
         if searchText.isEmpty {
             return viewModel.logs
@@ -48,7 +64,7 @@ struct LogView: View {
             return viewModel.logs.filter { $0.request.contains(searchText) || $0.response.contains(searchText) }
         }
     }
-
+    
     var body: some View {
         VStack {
             HStack {
