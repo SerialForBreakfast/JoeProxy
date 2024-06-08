@@ -11,12 +11,7 @@ struct ContentView: View {
     var body: some View {
         VStack {
             if certificateService.certificateExists, let creationDate = certificateService.certificateCreationDate {
-                HStack {
-                    Text("Certificate exists, created on \(creationDate)")
-//                    Button("Open Directory") {
-//                        NSWorkspace.shared.open(certificateService.certificateURL.deletingLastPathComponent())
-//                    }
-                }
+                Text("Certificate exists, created on \(creationDate)")
             } else {
                 Text("No certificate found")
             }
@@ -32,15 +27,17 @@ struct ContentView: View {
                 .padding()
                 
                 if certificateService.certificateExists {
-                    Button("Open Directory") {
-                        NSWorkspace.shared.open(certificateService.certificateURL.deletingLastPathComponent())
+                    Button("Open Certificate Directory") {
+                        let url = certificateService.certificateURL.deletingLastPathComponent()
+                        NSWorkspace.shared.open(url)
                     }
+                    .padding()
                 }
             }
-            
+
             LogView(viewModel: viewModel)
             Button("Save Logs") {
-                viewModel.saveLog()
+                viewModel.saveLogs()
             }
             .padding()
         }

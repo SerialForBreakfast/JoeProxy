@@ -7,40 +7,70 @@
 
 import SwiftUI
 import Combine
+import Foundation
 
 class LogViewModel: ObservableObject {
-    @Published var logs: [String] = []
+    @Published var logs: [LogEntry] = []
     private var loggingService: LoggingService
     private var cancellables = Set<AnyCancellable>()
     
     init(loggingService: LoggingService) {
         self.loggingService = loggingService
         loggingService.logsPublisher
-            .sink { [weak self] newLogs in
-                self?.logs = newLogs
+            .map { logMessages in
+                // Convert log messages to LogEntry instances
+                logMessages.map { logMessage in
+                    LogEntry(timestamp: Date(), request: logMessage, headers: "", response: "", statusCode: 200) // Adjust fields as needed
+                }
             }
-            .store(in: &cancellables)
+            .assign(to: &$logs)
     }
     
-    func saveLog() {
+    func saveLogs() {
         loggingService.saveLogsToFile()
     }
 }
 
 struct LogView: View {
     @ObservedObject var viewModel: LogViewModel
+    @State private var searchText = ""
+
+    var filteredLogs: [LogEntry] {
+        if searchText.isEmpty {
+            return viewModel.logs
+        } else {
+            return viewModel.logs.filter { $0.request.contains(searchText) || $0.response.contains(searchText) }
+        }
+    }
 
     var body: some View {
         VStack {
-            Text("Log Entries")
-                .font(.headline)
+            TextField("Search logs...", text: $searchText)
                 .padding()
-
-            List(viewModel.logs, id: \.self) { log in
-                Text(log)
+            Table(filteredLogs) {
+                TableColumn("Timestamp") { log in
+                    Text(log.timestamp, style: .date)
+                }
+                TableColumn("Request", value: \.request)
+                TableColumn("Headers", value: \.headers)
+                TableColumn("Response", value: \.response)
+                TableColumn("Status Code") { log in
+                    Text("\(log.statusCode)")
+                }
             }
+            .tableStyle(InsetTableStyle()) // Optional, to add table style
         }
+        .padding()
     }
+}
+
+struct LogEntry: Identifiable {
+    let id = UUID()
+    let timestamp: Date
+    let request: String
+    let headers: String
+    let response: String
+    let statusCode: Int
 }
 
 struct LogView_Previews: PreviewProvider {
