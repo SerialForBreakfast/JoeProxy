@@ -6,13 +6,12 @@ struct LogView: View {
     @State private var searchText = ""
     @State private var isPaused = false
     @State private var queuedLogs: [LogEntry] = []
-    @Binding var selectedLogEntry: LogEntry?
     @State private var filterText: String = ""
     @State private var cancellable: AnyCancellable?
     @State private var debounceCancellable: AnyCancellable?
+    @State private var selectedLogIndex: Int? = nil
 
     private let filterSubject = PassthroughSubject<String, Never>()
-    @State private var isUpdatingLogs = false
 
     var body: some View {
         VStack {
@@ -28,15 +27,30 @@ struct LogView: View {
                 .padding()
             }
 
-            Table(viewModel.filteredLogs(filterText)) {
-                TableColumn("Timestamp") { log in
-                    Text(log.timestampString)
+            HStack {
+                List(viewModel.filteredLogs(filterText).indices, id: \.self) { index in
+                    HStack {
+                        Text(viewModel.filteredLogs(filterText)[index].timestampString)
+                        Spacer()
+                        Text(viewModel.filteredLogs(filterText)[index].request)
+                        Spacer()
+                        Text(viewModel.filteredLogs(filterText)[index].headers)
+                        Spacer()
+                        Text(viewModel.filteredLogs(filterText)[index].response)
+                        Spacer()
+                        Text(viewModel.filteredLogs(filterText)[index].statusCodeString)
+                    }
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        selectedLogIndex = index
+                        print("Row tapped, selected index: \(index)")
+                    }
                 }
-                TableColumn("Request", value: \.request)
-                TableColumn("Headers", value: \.headers)
-                TableColumn("Response", value: \.response)
-                TableColumn("Status Code") { log in
-                    Text(log.statusCodeString)
+                .listStyle(PlainListStyle())
+
+                if let selectedIndex = selectedLogIndex, selectedIndex != -1 {
+                    InspectorView(logEntry: viewModel.filteredLogs(filterText)[selectedIndex])
+                        .frame(width: 300)
                 }
             }
         }
@@ -61,9 +75,7 @@ struct LogView: View {
 }
 
 struct LogView_Previews: PreviewProvider {
-    @State static var selectedLogEntry: LogEntry? = nil
-
     static var previews: some View {
-        LogView(viewModel: LogViewModel(loggingService: MockLoggingService()), selectedLogEntry: $selectedLogEntry)
+        LogView(viewModel: LogViewModel(loggingService: MockLoggingService()))
     }
 }

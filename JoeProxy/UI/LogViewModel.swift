@@ -34,9 +34,9 @@ class LogViewModel: ObservableObject {
                     LogEntry(
                         timestamp: Date(), // replace with actual parsed timestamp
                         request: logString, // replace with actual parsed request
-                        headers: "231", // replace with actual parsed headers
-                        response: "fdsvs", // replace with actual parsed response
-                        responseBody: "", // replace with actual parsed response body
+                        headers: "example headers", // replace with actual parsed headers
+                        response: "example response", // replace with actual parsed response
+                        responseBody: "example response body", // replace with actual parsed response body
                         statusCode: 200 // replace with actual parsed status code
                     )
                 }
@@ -46,13 +46,12 @@ class LogViewModel: ObservableObject {
 
     func loadLogs() {
         print("Loading logs...")
-        // Implement logic to load logs
         logs = [
-            LogEntry(timestamp: Date(), request: "GET /index.html", headers: "Host: example.com\nUser-Agent: TestAgent", response: "200 OK", responseBody: "{\"key\": \"value\"}", statusCode: 200),
-            LogEntry(timestamp: Date().addingTimeInterval(-60), request: "POST /api/data", headers: "Host: example.com\nContent-Type: application/json", response: "201 Created", responseBody: "{\"data\": \"sample\"}", statusCode: 201),
-            LogEntry(timestamp: Date().addingTimeInterval(-120), request: "GET /notfound.html", headers: "Host: example.com\nUser-Agent: TestAgent", response: "404 Not Found", responseBody: "Not Found", statusCode: 404),
+            LogEntry(timestamp: Date(), request: "GET /index.html", headers: "Host: example.com\nUser-Agent: TestAgent", response: "200 OK", responseBody: "{ \"data\": \"example\" }", statusCode: 200),
+            LogEntry(timestamp: Date().addingTimeInterval(-60), request: "POST /api/data", headers: "Host: example.com\nContent-Type: application/json", response: "201 Created", responseBody: "{ \"data\": \"example\" }", statusCode: 201),
+            LogEntry(timestamp: Date().addingTimeInterval(-120), request: "GET /notfound.html", headers: "Host: example.com\nUser-Agent: TestAgent", response: "404 Not Found", responseBody: "{ \"data\": \"example\" }", statusCode: 404),
             LogEntry(timestamp: Date().addingTimeInterval(-180), request: "DELETE /api/data/1", headers: "Host: example.com\nAuthorization: Bearer token", response: "204 No Content", responseBody: "", statusCode: 204),
-            LogEntry(timestamp: Date().addingTimeInterval(-240), request: "PUT /api/data/1", headers: "Host: example.com\nContent-Type: application/json", response: "200 OK", responseBody: "{\"id\": 1, \"status\": \"updated\"}", statusCode: 200)
+            LogEntry(timestamp: Date().addingTimeInterval(-240), request: "PUT /api/data/1", headers: "Host: example.com\nContent-Type: application/json", response: "200 OK", responseBody: "{ \"data\": \"example\" }", statusCode: 200)
         ]
         print("Logs loaded.")
     }
@@ -62,7 +61,7 @@ class LogViewModel: ObservableObject {
     }
 
     func updateLogs(with newLogs: [LogEntry]) {
-        print("Updating logs")
         logs = newLogs
+        print("Updating logs")
     }
 }

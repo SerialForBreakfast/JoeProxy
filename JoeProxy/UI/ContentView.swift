@@ -36,7 +36,7 @@ struct ContentView: View {
                 .padding()
             }
 
-            LogView(viewModel: viewModel, selectedLogEntry: $selectedLogEntry)
+            LogView(viewModel: viewModel)
             Button("Save Logs") {
                 viewModel.saveLogsToFile()
             }

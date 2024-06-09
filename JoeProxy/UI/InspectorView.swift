@@ -13,7 +13,7 @@ struct InspectorView: View {
                 .font(.subheadline)
             Text("Status Code: \(logEntry.statusCode)")
                 .font(.subheadline)
-            Text("Timestamp: \(logEntry.timestampString)")
+            Text("Timestamp: \(logEntry.timestamp, formatter: DateFormatter())")
                 .font(.subheadline)
             Text("Response Body: \(prettifyJSON(logEntry.responseBody))")
                 .font(.body)
