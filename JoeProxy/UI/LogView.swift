@@ -3,7 +3,8 @@ import Combine
 
 struct LogView: View {
     @ObservedObject var viewModel: LogViewModel
-    @Binding var selectedLogEntry: LogEntry?
+    @State private var searchText = ""
+    @State private var isPaused = false
     @State private var filterText: String = ""
     @State private var cancellable: AnyCancellable?
 
@@ -17,13 +18,13 @@ struct LogView: View {
                     .onChange(of: filterText) { newValue in
                         filterSubject.send(newValue)
                     }
-                Button("Resume") {
-                    // Resume logic here
+                Button(isPaused ? "Resume" : "Pause") {
+                    isPaused.toggle()
                 }
                 .padding()
             }
 
-            Table(viewModel.filteredLogs) {
+            Table(viewModel.filteredLogs(filterText)) {
                 TableColumn("Timestamp") { log in
                     Text(log.timestampString)
                 }
@@ -36,6 +37,9 @@ struct LogView: View {
             }
         }
         .onAppear {
+            print("LogView onAppear called.")
+            viewModel.loadLogs()
+
             cancellable = filterSubject
                 .debounce(for: .milliseconds(500), scheduler: RunLoop.main)
                 .removeDuplicates()
@@ -47,9 +51,7 @@ struct LogView: View {
 }
 
 struct LogView_Previews: PreviewProvider {
-    @State static var selectedLogEntry: LogEntry? = nil
-
     static var previews: some View {
-        LogView(viewModel: LogViewModel(loggingService: MockLoggingService()), selectedLogEntry: $selectedLogEntry)
+        LogView(viewModel: LogViewModel(loggingService: MockLoggingService()))
     }
 }

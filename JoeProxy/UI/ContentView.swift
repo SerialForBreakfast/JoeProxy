@@ -1,5 +1,4 @@
 import SwiftUI
-import Combine
 
 struct ContentView: View {
     @ObservedObject var viewModel: LogViewModel
@@ -9,8 +8,6 @@ struct ContentView: View {
     @State private var showingNetworkInfo = false
     @State private var showingInspector = false
     @State private var selectedLogEntry: LogEntry?
-    @State private var filterText: String = ""
-    @State private var cancellable: AnyCancellable?
 
     var body: some View {
         VStack {
@@ -39,7 +36,7 @@ struct ContentView: View {
                 .padding()
             }
 
-            LogView(viewModel: viewModel, selectedLogEntry: $selectedLogEntry)
+            LogView(viewModel: viewModel)
             Button("Save Logs") {
                 viewModel.saveLogsToFile()
             }
@@ -54,11 +51,8 @@ struct ContentView: View {
             }
         }
         .onAppear {
+            print("ContentView onAppear called.")
             viewModel.loadLogs()
-            cancellable = viewModel.$logs
-                .sink { logs in
-                    viewModel.filterLogs(with: filterText)
-                }
         }
     }
 }
