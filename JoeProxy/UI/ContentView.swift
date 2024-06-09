@@ -1,15 +1,17 @@
 import SwiftUI
+import Combine
 
 struct ContentView: View {
     @ObservedObject var viewModel: LogViewModel
     @ObservedObject var certificateService: CertificateService
     @ObservedObject var networkingViewModel: NetworkingServiceViewModel
-    
+
     @State private var showingNetworkInfo = false
     @State private var showingInspector = false
     @State private var selectedLogEntry: LogEntry?
     @State private var filterText: String = ""
-    
+    @State private var cancellable: AnyCancellable?
+
     var body: some View {
         VStack {
             HStack {
@@ -36,7 +38,7 @@ struct ContentView: View {
                 }
                 .padding()
             }
-            
+
             LogView(viewModel: viewModel, selectedLogEntry: $selectedLogEntry)
             Button("Save Logs") {
                 viewModel.saveLogsToFile()
@@ -52,19 +54,11 @@ struct ContentView: View {
             }
         }
         .onAppear {
-            print("ContentView onAppear called.")
             viewModel.loadLogs()
-        }
-        .onReceive(viewModel.logsPublisher) { logs in
-            // Automatically select the first log entry if available
-            if selectedLogEntry == nil, let firstLog = logs.first {
-                selectedLogEntry = firstLog
-            }
-        }
-        .onChange(of: selectedLogEntry) { newSelection in
-            if let newLogEntry = newSelection {
-                viewModel.selectedLogEntry = newLogEntry
-            }
+            cancellable = viewModel.$logs
+                .sink { logs in
+                    viewModel.filterLogs(with: filterText)
+                }
         }
     }
 }
