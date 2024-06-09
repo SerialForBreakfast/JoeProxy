@@ -13,7 +13,7 @@ class CertificateService: ObservableObject {
     private var opensslPath: String = "/usr/bin/openssl"
     var opensslInstaller: OpenSSLInstaller
 
-    init(opensslInstaller: OpenSSLInstaller = OpenSSLInstaller()) {
+    init(opensslInstaller: OpenSSLInstaller = OpenSSLInstaller(), debug: Bool = false) {
         self.opensslInstaller = opensslInstaller
         let fileManager = FileManager.default
         let urls = fileManager.urls(for: .documentDirectory, in: .userDomainMask)
@@ -21,8 +21,13 @@ class CertificateService: ObservableObject {
             fatalError("Could not find document directory")
         }
 
-        self.certificateURL = documentDirectory.appendingPathComponent("certificate.crt")
-        self.pemURL = documentDirectory.appendingPathComponent("privateKey.pem")
+        let certDirectory = debug ? documentDirectory.appendingPathComponent("debugCerts") : documentDirectory
+        if debug {
+            try? fileManager.createDirectory(at: certDirectory, withIntermediateDirectories: true, attributes: nil)
+        }
+
+        self.certificateURL = certDirectory.appendingPathComponent("certificate.crt")
+        self.pemURL = certDirectory.appendingPathComponent("privateKey.pem")
 
         setup()
         checkCertificateExists()
@@ -52,17 +57,42 @@ class CertificateService: ObservableObject {
 
     func generateCertificate() {
         DispatchQueue.global(qos: .background).async { [weak self] in
-            guard let self else { return }
             do {
-                print("Using OpenSSL at \(self.opensslPath). Starting certificate generation...")
+                guard let self else { return }
+                print("Using OpensslPath \(self.opensslPath). Starting certificate generation...")
 
                 guard FileManager.default.fileExists(atPath: self.opensslPath) else {
                     print("OpenSSL not found at path \(self.opensslPath). Please install OpenSSL via Homebrew.")
                     return
                 }
 
-                try self.createPrivateKey()
-                try self.createCertificate()
+                let privateKeyProcess = Process()
+                privateKeyProcess.executableURL = URL(fileURLWithPath: self.opensslPath)
+                privateKeyProcess.arguments = ["genpkey", "-algorithm", "RSA", "-out", self.pemURL.path, "-pkeyopt", "rsa_keygen_bits:2048"]
+
+                try privateKeyProcess.run()
+                privateKeyProcess.waitUntilExit()
+
+                if privateKeyProcess.terminationStatus != 0 {
+                    print("Failed to create private key")
+                    return
+                }
+
+                print("Private key written to \(self.pemURL.path)")
+
+                let certProcess = Process()
+                certProcess.executableURL = URL(fileURLWithPath: self.opensslPath)
+                certProcess.arguments = ["req", "-x509", "-new", "-nodes", "-key", self.pemURL.path, "-sha256", "-days", "365", "-out", self.certificateURL.path, "-subj", "/CN=Test/O=TestOrg/C=US"]
+
+                try certProcess.run()
+                certProcess.waitUntilExit()
+
+                if certProcess.terminationStatus != 0 {
+                    print("Failed to create certificate")
+                    return
+                }
+
+                print("Certificate written to \(self.certificateURL.path)")
 
                 DispatchQueue.main.async {
                     self.certificateExists = true
@@ -73,46 +103,5 @@ class CertificateService: ObservableObject {
                 print("Error generating certificate: \(error)")
             }
         }
-    }
-
-    private func createPrivateKey() throws {
-        let privateKeyProcess = Process()
-        privateKeyProcess.executableURL = URL(fileURLWithPath: opensslPath)
-        privateKeyProcess.arguments = ["genpkey", "-algorithm", "RSA", "-out", pemURL.path, "-pkeyopt", "rsa_keygen_bits:2048"]
-
-        try privateKeyProcess.run()
-        privateKeyProcess.waitUntilExit()
-
-        if privateKeyProcess.terminationStatus != 0 {
-            throw NSError(domain: "com.example.JoeProxy", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create private key"])
-        }
-
-        print("Private key written to \(pemURL.path)")
-    }
-
-    private func createCertificate() throws {
-        let certProcess = Process()
-        certProcess.executableURL = URL(fileURLWithPath: opensslPath)
-        certProcess.arguments = ["req", "-x509", "-new", "-nodes", "-key", pemURL.path, "-sha256", "-days", "365", "-out", certificateURL.path, "-subj", "/CN=Test/O=TestOrg/C=US"]
-
-        try certProcess.run()
-        certProcess.waitUntilExit()
-
-        if certProcess.terminationStatus != 0 {
-            throw NSError(domain: "com.example.JoeProxy", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create certificate"])
-        }
-
-        print("Certificate written to \(certificateURL.path)")
-    }
-
-    func loadCertificate() throws -> NIOSSLContext {
-        guard certificateExists else {
-            throw NSError(domain: "com.example.JoeProxy", code: 1, userInfo: [NSLocalizedDescriptionKey: "Certificate not found"])
-        }
-
-        let certChain = try NIOSSLCertificate.fromPEMFile(certificateURL.path)
-        let key = try NIOSSLPrivateKey(file: pemURL.path, format: .pem)
-        let tlsConfig = TLSConfiguration.makeServerConfiguration(certificateChain: certChain.map { .certificate($0) }, privateKey: .privateKey(key))
-        return try NIOSSLContext(configuration: tlsConfig)
     }
 }

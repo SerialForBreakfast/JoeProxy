@@ -12,7 +12,7 @@ class CertificateServiceTests: XCTestCase {
     var certificateService: CertificateService!
     
     override func setUpWithError() throws {
-        certificateService = CertificateService()
+        certificateService = CertificateService(debug: true)
         // Clean up any existing certificates before each test
         try? FileManager.default.removeItem(at: certificateService.certificateURL)
         try? FileManager.default.removeItem(at: certificateService.pemURL)
