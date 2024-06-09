@@ -4,8 +4,8 @@ import SystemConfiguration
 class NetworkInformation {
     static let shared = NetworkInformation()
 
-    func getNetworkInformation() -> [(interface: String, ipAddress: String?)] {
-        var addresses = [(interface: String, ipAddress: String?)]()
+    func getNetworkInformation() -> [(interface: String, ipAddress: String)] {
+        var addresses = [(interface: String, ipAddress: String)]()
         
         var ifaddr: UnsafeMutablePointer<ifaddrs>?
         if getifaddrs(&ifaddr) == 0 {
@@ -34,7 +34,9 @@ class NetworkInformation {
                         }
                     }
                     
-                    addresses.append((interface: name, ipAddress: address))
+                    if let address = address, !address.starts(with: "127.") {
+                        addresses.append((interface: name, ipAddress: address))
+                    }
                 }
                 
                 ptr = ptr!.pointee.ifa_next

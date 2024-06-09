@@ -25,3 +25,26 @@ class MockCertificateService: CertificateService {
         self.certificateCreationDate = nil
     }
 }
+
+
+// Mock Networking Service to avoid actual network operations
+class MockNetworkingService: NetworkingService {
+    private let configurationService: ConfigurationService
+    private var isServerRunning = false
+    
+    init(configurationService: ConfigurationService) {
+        self.configurationService = configurationService
+    }
+    
+    func startServer() throws {
+        guard !isServerRunning else { throw NSError(domain: "Server already running", code: 1, userInfo: nil) }
+        isServerRunning = true
+        print("Mock server started on port \(configurationService.proxyPort)")
+    }
+    
+    func stopServer() throws {
+        guard isServerRunning else { throw NSError(domain: "Server not running", code: 1, userInfo: nil) }
+        isServerRunning = false
+        print("Mock server stopped.")
+    }
+}

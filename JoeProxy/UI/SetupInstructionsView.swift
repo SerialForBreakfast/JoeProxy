@@ -2,13 +2,11 @@ import SwiftUI
 
 struct SetupInstructionsView: View {
     @State private var selectedPlatform: Platform = .iOS
+    @State private var selectedInterface: String = ""
     @ObservedObject var networkingViewModel: NetworkingServiceViewModel
     private let certificateService: CertificateService
     
-    init(networkingViewModel: NetworkingServiceViewModel, certificateService: CertificateService) {
-        self.networkingViewModel = networkingViewModel
-        self.certificateService = certificateService
-    }
+    private let networkInfo = NetworkInformation.shared.getNetworkInformation()
     
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -19,19 +17,12 @@ struct SetupInstructionsView: View {
                 .padding()
                 
                 Button("Refresh Network Information") {
-                    networkingViewModel.refreshNetworkInfo()
+                    refreshNetworkInfo()
                 }
                 .padding()
             }
             Text("Setup Instructions")
                 .font(.title)
-                .padding(.bottom, 20)
-            
-            Text("Server IP Address: \(networkingViewModel.ipAddress ?? "Unknown")")
-                .textSelection(.enabled)
-                .padding(.bottom, 5)
-            Text("Server Port: \(networkingViewModel.port)")
-                .textSelection(.enabled)
                 .padding(.bottom, 20)
             
             Picker("Select Platform", selection: $selectedPlatform) {
@@ -42,15 +33,32 @@ struct SetupInstructionsView: View {
             .pickerStyle(SegmentedPickerStyle())
             .padding(.bottom, 20)
             
+            Picker("Select Network Interface", selection: $selectedInterface) {
+                ForEach(networkInfo, id: \.interface) { info in
+                    Text("\(info.interface): \(info.ipAddress)").tag(info.interface)
+                }
+            }
+            .padding(.bottom, 20)
+            
+            if let selectedInfo = networkInfo.first(where: { $0.interface == selectedInterface }) {
+                Text("Server IP Address: \(selectedInfo.ipAddress)")
+                Text("Server Port: \(networkingViewModel.port)")
+            }
+            
             ForEach(selectedPlatform.instructions, id: \.self) { instruction in
                 Text(instruction)
-                    .textSelection(.enabled)
                     .padding(.bottom, 5)
             }
             
             Spacer()
         }
         .padding()
+        .textSelection(.enabled) // Make the text selectable
+        .onAppear {
+            if let firstInterface = networkInfo.first {
+                selectedInterface = firstInterface.interface
+            }
+        }
     }
     
     func shareCertificate() {
@@ -60,20 +68,14 @@ struct SetupInstructionsView: View {
             sharingPicker.show(relativeTo: .zero, of: view, preferredEdge: .minY)
         }
     }
-}
 
-struct SetupInstructionsView_Previews: PreviewProvider {
-    static var previews: some View {
-        SetupInstructionsView(
-            networkingViewModel: NetworkingServiceViewModel(
-                networkingService: DefaultNetworkingService(
-                    configurationService: BasicConfigurationService(),
-                    filteringService: DefaultFilteringService(criteria: FilteringCriteria(urls: ["example.com"], filterType: .allow)),
-                    loggingService: DefaultLoggingService(configurationService: BasicConfigurationService()),
-                    certificateService: CertificateService()
-                )
-            ),
-            certificateService: CertificateService()
-        )
+    func refreshNetworkInfo() {
+        networkingViewModel.refreshNetworkInfo()
     }
 }
+
+//struct SetupInstructionsView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        SetupInstructionsView(networkingViewModel: NetworkingServiceViewModel(networkingService: MockNetworkingService()), certificateService: CertificateService())
+//    }
+//}
