@@ -9,6 +9,7 @@ final class SSLHandler: ChannelInboundHandler {
 
     private let filteringService: FilteringService
     private let loggingService: LoggingService
+    private var requestBody: ByteBuffer?
 
     init(filteringService: FilteringService, loggingService: LoggingService) {
         self.filteringService = filteringService
@@ -20,8 +21,8 @@ final class SSLHandler: ChannelInboundHandler {
         switch part {
         case .head(let requestHead):
             handleRequestHead(context: context, requestHead: requestHead)
-        case .body(let requestBody):
-            handleRequestBody(context: context, requestBody: requestBody)
+        case .body(let chunkBody):
+            handleRequestBody(context: context, chunkBody: chunkBody)
         case .end:
             handleRequestEnd(context: context)
         }
@@ -36,20 +37,26 @@ final class SSLHandler: ChannelInboundHandler {
 
         if filteringService.shouldAllowRequest(url: requestHead.uri) {
             loggingService.log("Request allowed: \(requestString)", level: .info)
+            sendResponse(context: context, status: .ok, body: "Request allowed: \(requestHead.uri)")
         } else {
             loggingService.log("Request blocked: \(requestString)", level: .info)
             sendResponse(context: context, status: .forbidden, body: "Request blocked: \(requestHead.uri)")
-            return
         }
     }
 
-    private func handleRequestBody(context: ChannelHandlerContext, requestBody: ByteBuffer) {
-        loggingService.log("Received body data: \(requestBody.readableBytes) bytes", level: .debug)
+    private func handleRequestBody(context: ChannelHandlerContext, chunkBody: ByteBuffer) {
+        if var existingBody = self.requestBody {
+            var chunkBodyCopy = chunkBody
+            existingBody.writeBuffer(&chunkBodyCopy)
+            self.requestBody = existingBody
+        } else {
+            self.requestBody = chunkBody
+        }
+        loggingService.log("Received body data: \(chunkBody.readableBytes) bytes", level: .debug)
     }
 
     private func handleRequestEnd(context: ChannelHandlerContext) {
         loggingService.log("Request ended", level: .debug)
-        sendResponse(context: context, status: .ok, body: "Request processed successfully.")
     }
 
     private func sendResponse(context: ChannelHandlerContext, status: HTTPResponseStatus, body: String) {
@@ -59,9 +66,7 @@ final class SSLHandler: ChannelInboundHandler {
         let responseHead = HTTPResponseHead(version: .http1_1, status: status)
         context.write(self.wrapOutboundOut(.head(responseHead)), promise: nil)
         context.write(self.wrapOutboundOut(.body(.byteBuffer(buffer))), promise: nil)
-        context.writeAndFlush(self.wrapOutboundOut(.end(nil))).whenComplete { _ in
-            context.close(promise: nil)
-        }
+        context.writeAndFlush(self.wrapOutboundOut(.end(nil)), promise: nil)
     }
 
     func errorCaught(context: ChannelHandlerContext, error: Error) {

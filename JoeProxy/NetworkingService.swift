@@ -68,7 +68,7 @@ class DefaultNetworkingService: NetworkingService {
             .childChannelOption(ChannelOptions.recvAllocator, value: AdaptiveRecvByteBufferAllocator())
         
         do {
-            channel = try bootstrap.bind(host: "localhost", port: 8443).wait()
+            channel = try bootstrap.bind(host: "localhost", port: 8443).wait() // Change to port 8443
             print("Server started and listening on \(String(describing: channel?.localAddress))")
         } catch {
             print("Failed to start server: \(error)")
