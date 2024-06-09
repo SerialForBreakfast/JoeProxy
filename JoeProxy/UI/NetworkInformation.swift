@@ -1,69 +1,47 @@
-//
-//  NetworkInformation.swift
-//  JoeProxy
-//
-//  Created by Joseph McCraw on 6/9/24.
-//
-
 import Foundation
 import SystemConfiguration
 
 class NetworkInformation {
     static let shared = NetworkInformation()
-    
-    private init() {}
-    
-    func getAllNetworkInterfaces() -> [String] {
-        var interfaces: [String] = []
+
+    func getNetworkInformation() -> [(interface: String, ipAddress: String?)] {
+        var addresses = [(interface: String, ipAddress: String?)]()
         
-        // Use System Configuration to get network interfaces
-        if let interfaceList = SCNetworkInterfaceCopyAll() as? [SCNetworkInterface] {
-            for interface in interfaceList {
-                if let interfaceName = SCNetworkInterfaceGetBSDName(interface) {
-                    interfaces.append(interfaceName as String)
-                }
-            }
-        }
-        
-        return interfaces
-    }
-    
-    func getIPAddress(for interface: String) -> String? {
-        var address: String?
-        
-        // Use getifaddrs to get IP address
-        var ifaddr: UnsafeMutablePointer<ifaddrs>? = nil
+        var ifaddr: UnsafeMutablePointer<ifaddrs>?
         if getifaddrs(&ifaddr) == 0 {
             var ptr = ifaddr
             while ptr != nil {
-                defer { ptr = ptr?.pointee.ifa_next }
+                let interface = ptr!.pointee
+                let addrFamily = interface.ifa_addr.pointee.sa_family
                 
-                let interfaceName = String(cString: (ptr?.pointee.ifa_name)!)
-                if interfaceName == interface {
-                    let addrFamily = ptr?.pointee.ifa_addr.pointee.sa_family
-                    if addrFamily == UInt8(AF_INET) || addrFamily == UInt8(AF_INET6) {
-                        var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
-                        if getnameinfo(ptr?.pointee.ifa_addr, socklen_t((ptr?.pointee.ifa_addr.pointee.sa_len)!), &hostname, socklen_t(hostname.count), nil, socklen_t(0), NI_NUMERICHOST) == 0 {
-                            address = String(cString: hostname)
+                if addrFamily == UInt8(AF_INET) || addrFamily == UInt8(AF_INET6) {
+                    let name = String(cString: interface.ifa_name)
+                    var address: String?
+                    
+                    if addrFamily == UInt8(AF_INET) {
+                        var addr = sockaddr_in()
+                        memcpy(&addr, interface.ifa_addr, MemoryLayout<sockaddr_in>.size)
+                        var buffer = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+                        if getnameinfo(interface.ifa_addr, socklen_t(MemoryLayout<sockaddr_in>.size), &buffer, socklen_t(buffer.count), nil, socklen_t(0), NI_NUMERICHOST) == 0 {
+                            address = String(cString: buffer)
+                        }
+                    } else if addrFamily == UInt8(AF_INET6) {
+                        var addr = sockaddr_in6()
+                        memcpy(&addr, interface.ifa_addr, MemoryLayout<sockaddr_in6>.size)
+                        var buffer = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+                        if getnameinfo(interface.ifa_addr, socklen_t(MemoryLayout<sockaddr_in6>.size), &buffer, socklen_t(buffer.count), nil, socklen_t(0), NI_NUMERICHOST) == 0 {
+                            address = String(cString: buffer)
                         }
                     }
+                    
+                    addresses.append((interface: name, ipAddress: address))
                 }
+                
+                ptr = ptr!.pointee.ifa_next
             }
             freeifaddrs(ifaddr)
         }
         
-        return address
-    }
-    
-    func getNetworkInformation() -> [(interface: String, ipAddress: String?)] {
-        let interfaces = getAllNetworkInterfaces()
-        var networkInfo: [(interface: String, ipAddress: String?)] = []
-        
-        for interface in interfaces {
-            let ipAddress = getIPAddress(for: interface)
-            networkInfo.append((interface: interface, ipAddress: ipAddress))
-        }
-        
-        return networkInfo
+        return addresses
     }
 }

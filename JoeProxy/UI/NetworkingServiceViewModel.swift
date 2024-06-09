@@ -38,9 +38,9 @@ class NetworkingServiceViewModel: ObservableObject {
         }
     }
     func refreshNetworkInfo() {
-            self.networkInfo = NetworkInformation.shared.getNetworkInformation()
-            if let firstInfo = networkInfo.first {
-                self.ipAddress = firstInfo.ipAddress
-            }
+        self.networkInfo = NetworkInformation.shared.getNetworkInformation()
+        if let firstInfo = networkInfo.first {
+            self.ipAddress = firstInfo.ipAddress
         }
+    }
 }

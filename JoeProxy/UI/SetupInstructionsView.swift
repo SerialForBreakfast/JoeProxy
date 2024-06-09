@@ -28,8 +28,10 @@ struct SetupInstructionsView: View {
                 .padding(.bottom, 20)
             
             Text("Server IP Address: \(networkingViewModel.ipAddress ?? "Unknown")")
+                .textSelection(.enabled)
                 .padding(.bottom, 5)
             Text("Server Port: \(networkingViewModel.port)")
+                .textSelection(.enabled)
                 .padding(.bottom, 20)
             
             Picker("Select Platform", selection: $selectedPlatform) {
@@ -42,6 +44,7 @@ struct SetupInstructionsView: View {
             
             ForEach(selectedPlatform.instructions, id: \.self) { instruction in
                 Text(instruction)
+                    .textSelection(.enabled)
                     .padding(.bottom, 5)
             }
             
