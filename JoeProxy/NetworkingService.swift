@@ -26,7 +26,8 @@ class DefaultNetworkingService: NetworkingService {
         print("Starting SSL server setup...")
         
         // Ensure the certificate and PEM files exist
-        if !FileManager.default.fileExists(atPath: certificateService.certificateURL.path) || !FileManager.default.fileExists(atPath: certificateService.pemURL.path) {
+        guard FileManager.default.fileExists(atPath: certificateService.certificateURL.path),
+              FileManager.default.fileExists(atPath: certificateService.pemURL.path) else {
             print("Certificate and/or PEM files are missing at paths:")
             print("Certificate path: \(certificateService.certificateURL.path)")
             print("PEM path: \(certificateService.pemURL.path)")
@@ -48,7 +49,7 @@ class DefaultNetworkingService: NetworkingService {
             print("SSL context created successfully.")
         } catch {
             print("Failed to create SSL context: \(error)")
-            return
+            throw error
         }
         
         group = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
@@ -67,17 +68,28 @@ class DefaultNetworkingService: NetworkingService {
             .childChannelOption(ChannelOptions.recvAllocator, value: AdaptiveRecvByteBufferAllocator())
         
         do {
-            channel = try bootstrap.bind(host: "localhost", port: 8443).wait() // Change to port 8443
+            channel = try bootstrap.bind(host: "localhost", port: 8443).wait()
             print("Server started and listening on \(String(describing: channel?.localAddress))")
         } catch {
             print("Failed to start server: \(error)")
+            group = nil
+            throw error
         }
     }
 
     func stopServer() throws {
         print("Stopping SSL server...")
-        try channel?.close().wait()
-        try group?.syncShutdownGracefully()
-        print("Server stopped.")
+        defer {
+            group = nil
+            channel = nil
+        }
+        do {
+            try channel?.close().wait()
+            try group?.syncShutdownGracefully()
+            print("Server stopped.")
+        } catch {
+            print("Failed to stop server gracefully: \(error)")
+            throw error
+        }
     }
 }
