@@ -18,6 +18,8 @@
 		442463BB2C15821E002951DD /* HTTPClientHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 442463BA2C15821E002951DD /* HTTPClientHandler.swift */; };
 		442463BD2C1589EB002951DD /* HTTPClientResponseHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 442463BC2C1589EB002951DD /* HTTPClientResponseHandler.swift */; };
 		442463BF2C159BA1002951DD /* SetupInstructionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 442463BE2C159BA1002951DD /* SetupInstructionsView.swift */; };
+		442463C12C15A57D002951DD /* NetworkInformation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 442463C02C15A57D002951DD /* NetworkInformation.swift */; };
+		442463C32C15A6FA002951DD /* Enums.swift in Sources */ = {isa = PBXBuildFile; fileRef = 442463C22C15A6FA002951DD /* Enums.swift */; };
 		445A3C632C12647D008E68AE /* JoeProxyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 445A3C622C12647D008E68AE /* JoeProxyApp.swift */; };
 		445A3C652C12647D008E68AE /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 445A3C642C12647D008E68AE /* ContentView.swift */; };
 		445A3C672C12647F008E68AE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 445A3C662C12647F008E68AE /* Assets.xcassets */; };
@@ -82,6 +84,8 @@
 		442463BA2C15821E002951DD /* HTTPClientHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPClientHandler.swift; sourceTree = "<group>"; };
 		442463BC2C1589EB002951DD /* HTTPClientResponseHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPClientResponseHandler.swift; sourceTree = "<group>"; };
 		442463BE2C159BA1002951DD /* SetupInstructionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupInstructionsView.swift; sourceTree = "<group>"; };
+		442463C02C15A57D002951DD /* NetworkInformation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkInformation.swift; sourceTree = "<group>"; };
+		442463C22C15A6FA002951DD /* Enums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Enums.swift; sourceTree = "<group>"; };
 		445A3C5F2C12647D008E68AE /* JoeProxy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = JoeProxy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		445A3C622C12647D008E68AE /* JoeProxyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoeProxyApp.swift; sourceTree = "<group>"; };
 		445A3C642C12647D008E68AE /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -167,6 +171,7 @@
 				442463BA2C15821E002951DD /* HTTPClientHandler.swift */,
 				442463BC2C1589EB002951DD /* HTTPClientResponseHandler.swift */,
 				442463BE2C159BA1002951DD /* SetupInstructionsView.swift */,
+				442463C02C15A57D002951DD /* NetworkInformation.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -215,6 +220,7 @@
 				445A3C682C12647F008E68AE /* Preview Content */,
 				445A3CA32C127BCB008E68AE /* FilteringCriteria.swift */,
 				445A3CA52C127BE5008E68AE /* FilteringService.swift */,
+				442463C22C15A6FA002951DD /* Enums.swift */,
 			);
 			path = JoeProxy;
 			sourceTree = "<group>";
@@ -416,6 +422,7 @@
 				445A3C652C12647D008E68AE /* ContentView.swift in Sources */,
 				447355962C14FE3300B6C5A7 /* LogEntry.swift in Sources */,
 				445A3C8E2C126616008E68AE /* ConfigurationService.swift in Sources */,
+				442463C12C15A57D002951DD /* NetworkInformation.swift in Sources */,
 				445A3CA42C127BCB008E68AE /* FilteringCriteria.swift in Sources */,
 				442463BD2C1589EB002951DD /* HTTPClientResponseHandler.swift in Sources */,
 				445A3CA62C127BE5008E68AE /* FilteringService.swift in Sources */,
@@ -427,6 +434,7 @@
 				442463B92C158180002951DD /* HTTPServerHandler.swift in Sources */,
 				447355942C14EE7100B6C5A7 /* NetworkingServiceViewModel.swift in Sources */,
 				447355922C14ED1700B6C5A7 /* NetworkInfoView.swift in Sources */,
+				442463C32C15A6FA002951DD /* Enums.swift in Sources */,
 				44EDF1F42C130DDC007D7C35 /* OpenSSLInstaller.swift in Sources */,
 				4402B6502C128BBC00761AC5 /* SimpleHandler.swift in Sources */,
 				4402B6552C12901500761AC5 /* BasicConfigurationService.swift in Sources */,

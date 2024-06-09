@@ -1,63 +1,35 @@
-//
-//  SetupInstructionsView.swift
-//  JoeProxy
-//
-//  Created by Joseph McCraw on 6/9/24.
-//
-
 import SwiftUI
-
-enum Platform: String, CaseIterable, Identifiable {
-    case iOS, tvOS, macOS
-    
-    var id: String { self.rawValue }
-    
-    var instructions: [String] {
-        switch self {
-        case .iOS:
-            return [
-                "1. Ensure the SSL server is running.",
-                "2. Install the client certificate on your iOS device:",
-                "   a. Download the certificate file.",
-                "   b. Open the Settings app.",
-                "   c. Go to General > Profiles & Device Management.",
-                "   d. Import the certificate file.",
-                "   e. Ensure the certificate is set to 'Always Trust'.",
-                "3. Configure your client application to use the certificate for SSL connections.",
-                "4. Connect to the SSL server using the appropriate client settings."
-            ]
-        case .tvOS:
-            return [
-                "1. Ensure the SSL server is running.",
-                "2. Install the client certificate on your tvOS device:",
-                "   a. Download the certificate file.",
-                "   b. Use Apple Configurator or another tool to install the certificate on your tvOS device.",
-                "   c. Ensure the certificate is set to 'Always Trust'.",
-                "3. Configure your client application to use the certificate for SSL connections.",
-                "4. Connect to the SSL server using the appropriate client settings."
-            ]
-        case .macOS:
-            return [
-                "1. Ensure the SSL server is running.",
-                "2. Install the client certificate on your macOS device:",
-                "   a. Download the certificate file.",
-                "   b. Open the Keychain Access application.",
-                "   c. Import the certificate file into the 'System' keychain.",
-                "   d. Ensure the certificate is set to 'Always Trust'.",
-                "3. Configure your client application to use the certificate for SSL connections.",
-                "4. Connect to the SSL server using the appropriate client settings."
-            ]
-        }
-    }
-}
 
 struct SetupInstructionsView: View {
     @State private var selectedPlatform: Platform = .iOS
+    @ObservedObject var networkingViewModel: NetworkingServiceViewModel
+    private let certificateService: CertificateService
+    
+    init(networkingViewModel: NetworkingServiceViewModel, certificateService: CertificateService) {
+        self.networkingViewModel = networkingViewModel
+        self.certificateService = certificateService
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Button("Share Certificate") {
+                    shareCertificate()
+                }
+                .padding()
+                
+                Button("Refresh Network Information") {
+                    networkingViewModel.refreshNetworkInfo()
+                }
+                .padding()
+            }
             Text("Setup Instructions")
                 .font(.title)
+                .padding(.bottom, 20)
+            
+            Text("Server IP Address: \(networkingViewModel.ipAddress ?? "Unknown")")
+                .padding(.bottom, 5)
+            Text("Server Port: \(networkingViewModel.port)")
                 .padding(.bottom, 20)
             
             Picker("Select Platform", selection: $selectedPlatform) {
@@ -77,10 +49,28 @@ struct SetupInstructionsView: View {
         }
         .padding()
     }
+    
+    func shareCertificate() {
+        let url = certificateService.certificateURL
+        let sharingPicker = NSSharingServicePicker(items: [url])
+        if let view = NSApplication.shared.keyWindow?.contentView {
+            sharingPicker.show(relativeTo: .zero, of: view, preferredEdge: .minY)
+        }
+    }
 }
 
 struct SetupInstructionsView_Previews: PreviewProvider {
     static var previews: some View {
-        SetupInstructionsView()
+        SetupInstructionsView(
+            networkingViewModel: NetworkingServiceViewModel(
+                networkingService: DefaultNetworkingService(
+                    configurationService: BasicConfigurationService(),
+                    filteringService: DefaultFilteringService(criteria: FilteringCriteria(urls: ["example.com"], filterType: .allow)),
+                    loggingService: DefaultLoggingService(configurationService: BasicConfigurationService()),
+                    certificateService: CertificateService()
+                )
+            ),
+            certificateService: CertificateService()
+        )
     }
 }

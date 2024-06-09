@@ -9,9 +9,9 @@ struct JoeProxyApp: App {
     private let networkingService = DefaultNetworkingService(configurationService: BasicConfigurationService(), filteringService: DefaultFilteringService(criteria: FilteringCriteria(urls: ["example.com"], filterType: .allow)), loggingService: DefaultLoggingService(configurationService: BasicConfigurationService()), certificateService: CertificateService())
     @StateObject private var viewModel = LogViewModel(loggingService: DefaultLoggingService(configurationService: BasicConfigurationService()))
     @StateObject private var networkingViewModel = NetworkingServiceViewModel(networkingService: DefaultNetworkingService(configurationService: BasicConfigurationService(), filteringService: DefaultFilteringService(criteria: FilteringCriteria(urls: ["example.com"], filterType: .allow)), loggingService: DefaultLoggingService(configurationService: BasicConfigurationService()), certificateService: CertificateService()))
-
+    
     @State private var showSetupInstructions = false
-
+    
     var body: some Scene {
         WindowGroup {
             ContentView(
@@ -27,10 +27,11 @@ struct JoeProxyApp: App {
                 .keyboardShortcut("I", modifiers: [.command, .option])
             }
         }
+        .handlesExternalEvents(matching: ["SetupInstructions"])
     }
     
     func openInstructionsWindow() {
-        let instructionView = SetupInstructionsView()
+        let instructionView = SetupInstructionsView(networkingViewModel: networkingViewModel, certificateService: certificateService)
         let hostingController = NSHostingController(rootView: instructionView)
         let window = NSWindow(contentViewController: hostingController)
         window.setContentSize(NSSize(width: 600, height: 400))

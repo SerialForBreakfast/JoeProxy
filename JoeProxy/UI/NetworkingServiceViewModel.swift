@@ -10,8 +10,11 @@ import SwiftUI
 import Combine
 
 class NetworkingServiceViewModel: ObservableObject {
+    @Published var ipAddress: String?
+    @Published var port: Int = 8443
     @Published var isServerRunning: Bool = false
     private var networkingService: DefaultNetworkingService
+    @Published var networkInfo: [(interface: String, ipAddress: String?)] = []
 
     init(networkingService: DefaultNetworkingService) {
         self.networkingService = networkingService
@@ -34,4 +37,10 @@ class NetworkingServiceViewModel: ObservableObject {
             print("Failed to stop server: \(error)")
         }
     }
+    func refreshNetworkInfo() {
+            self.networkInfo = NetworkInformation.shared.getNetworkInformation()
+            if let firstInfo = networkInfo.first {
+                self.ipAddress = firstInfo.ipAddress
+            }
+        }
 }

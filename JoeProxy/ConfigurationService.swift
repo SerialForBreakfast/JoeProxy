@@ -12,10 +12,6 @@ protocol ConfigurationService {
     var proxyPort: Int { get set }
 }
 
-//enum LogLevel: String {
-//    case debug, info, warning, error
-//}
-
 class DefaultConfigurationService: ConfigurationService {
     private let userDefaults: UserDefaults
     
