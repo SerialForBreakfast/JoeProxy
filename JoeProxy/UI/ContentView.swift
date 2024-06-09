@@ -4,7 +4,7 @@ struct ContentView: View {
     @ObservedObject var viewModel: LogViewModel
     @ObservedObject var certificateService: CertificateService
     @ObservedObject var networkingViewModel: NetworkingServiceViewModel
-
+    
     @State private var showingNetworkInfo = false
     @State private var showingInspector = false
     @State private var selectedLogEntry: LogEntry?
@@ -36,7 +36,7 @@ struct ContentView: View {
                 .padding()
             }
 
-            LogView(viewModel: viewModel)
+            LogView(viewModel: viewModel, selectedLogEntry: $selectedLogEntry)
             Button("Save Logs") {
                 viewModel.saveLogsToFile()
             }

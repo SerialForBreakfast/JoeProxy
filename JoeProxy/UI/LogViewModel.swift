@@ -4,18 +4,16 @@ import Combine
 class LogViewModel: ObservableObject {
     @Published var logs: [LogEntry] = []
     @Published var selectedLogEntry: LogEntry?
-    
+
     private let loggingService: LoggingService
-    private var cancellables = Set<AnyCancellable>()
-    private let filterSubject = PassthroughSubject<String, Never>()
 
     init(loggingService: LoggingService) {
         self.loggingService = loggingService
         setupLogsPublisher()
-        setupFilterPublisher()
     }
 
     func filteredLogs(_ filterText: String) -> [LogEntry] {
+        print("filtering logs \(filterText)")
         if filterText.isEmpty {
             return logs
         } else {
@@ -36,8 +34,8 @@ class LogViewModel: ObservableObject {
                     LogEntry(
                         timestamp: Date(), // replace with actual parsed timestamp
                         request: logString, // replace with actual parsed request
-                        headers: "", // replace with actual parsed headers
-                        response: "", // replace with actual parsed response
+                        headers: "231", // replace with actual parsed headers
+                        response: "fdsvs", // replace with actual parsed response
                         responseBody: "", // replace with actual parsed response body
                         statusCode: 200 // replace with actual parsed status code
                     )
@@ -46,31 +44,25 @@ class LogViewModel: ObservableObject {
             .assign(to: &$logs)
     }
 
-    private func setupFilterPublisher() {
-        filterSubject
-            .debounce(for: .milliseconds(500), scheduler: RunLoop.main)
-            .removeDuplicates()
-            .sink { [weak self] newFilterText in
-                self?.filterLogs(with: newFilterText)
-            }
-            .store(in: &cancellables)
-    }
-
     func loadLogs() {
+        print("Loading logs...")
+        // Implement logic to load logs
         logs = [
-            LogEntry(timestamp: Date(), request: "GET /index.html", headers: "Host: example.com\nUser-Agent: TestAgent", response: "200 OK", responseBody: "{\"key\":\"value\"}", statusCode: 200),
-            LogEntry(timestamp: Date().addingTimeInterval(-60), request: "POST /api/data", headers: "Host: example.com\nContent-Type: application/json", response: "201 Created", responseBody: "{\"id\":1}", statusCode: 201),
-            LogEntry(timestamp: Date().addingTimeInterval(-120), request: "GET /notfound.html", headers: "Host: example.com\nUser-Agent: TestAgent", response: "404 Not Found", responseBody: "{\"error\":\"not found\"}", statusCode: 404),
+            LogEntry(timestamp: Date(), request: "GET /index.html", headers: "Host: example.com\nUser-Agent: TestAgent", response: "200 OK", responseBody: "{\"key\": \"value\"}", statusCode: 200),
+            LogEntry(timestamp: Date().addingTimeInterval(-60), request: "POST /api/data", headers: "Host: example.com\nContent-Type: application/json", response: "201 Created", responseBody: "{\"data\": \"sample\"}", statusCode: 201),
+            LogEntry(timestamp: Date().addingTimeInterval(-120), request: "GET /notfound.html", headers: "Host: example.com\nUser-Agent: TestAgent", response: "404 Not Found", responseBody: "Not Found", statusCode: 404),
             LogEntry(timestamp: Date().addingTimeInterval(-180), request: "DELETE /api/data/1", headers: "Host: example.com\nAuthorization: Bearer token", response: "204 No Content", responseBody: "", statusCode: 204),
-            LogEntry(timestamp: Date().addingTimeInterval(-240), request: "PUT /api/data/1", headers: "Host: example.com\nContent-Type: application/json", response: "200 OK", responseBody: "{\"updated\":true}", statusCode: 200)
+            LogEntry(timestamp: Date().addingTimeInterval(-240), request: "PUT /api/data/1", headers: "Host: example.com\nContent-Type: application/json", response: "200 OK", responseBody: "{\"id\": 1, \"status\": \"updated\"}", statusCode: 200)
         ]
+        print("Logs loaded.")
     }
 
     func saveLogsToFile() {
         loggingService.saveLogsToFile()
     }
-    
-    func filterLogs(with filterText: String) {
-        // Perform filtering if needed
+
+    func updateLogs(with newLogs: [LogEntry]) {
+        print("Updating logs")
+        logs = newLogs
     }
 }

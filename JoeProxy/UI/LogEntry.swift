@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct LogEntry: Identifiable {
+struct LogEntry: Identifiable, Equatable {
     let id = UUID()
     let timestamp: Date
     let request: String
@@ -25,5 +25,9 @@ struct LogEntry: Identifiable {
 
     var statusCodeString: String {
         return String(statusCode)
+    }
+
+    static func ==(lhs: LogEntry, rhs: LogEntry) -> Bool {
+        return lhs.id == rhs.id
     }
 }
