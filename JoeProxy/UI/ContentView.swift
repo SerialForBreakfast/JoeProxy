@@ -6,12 +6,11 @@ struct ContentView: View {
     @ObservedObject var networkingViewModel: NetworkingServiceViewModel
     
     @State private var showingNetworkInfo = false
-    @State private var showingInspector = false
     @State private var selectedLogEntry: LogEntry?
 
     var body: some View {
-        VStack {
-            HStack {
+        HStack {
+            VStack {
                 if certificateService.certificateExists {
                     Text("Certificate exists, created on \(certificateService.certificateCreationDate ?? Date())")
                     Button("Open Certificate Directory") {
@@ -34,24 +33,28 @@ struct ContentView: View {
                     networkingViewModel.isServerRunning ? networkingViewModel.stopServer() : networkingViewModel.startServer()
                 }
                 .padding()
+                LogView(viewModel: viewModel, selectedLogEntry: $selectedLogEntry)
+                Button("Save Logs") {
+                    viewModel.saveLogsToFile()
+                }
+                .padding()
+                
+                Button("Network Information") {
+                    showingNetworkInfo.toggle()
+                }
+                .padding()
+                .sheet(isPresented: $showingNetworkInfo) {
+                    NetworkInfoView()
+                }
             }
-
-            LogView(viewModel: viewModel)
-            Button("Save Logs") {
-                viewModel.saveLogsToFile()
-            }
-            .padding()
-
-            Button("Network Information") {
-                showingNetworkInfo.toggle()
-            }
-            .padding()
-            .sheet(isPresented: $showingNetworkInfo) {
-                NetworkInfoView()
+            
+            
+            if let selectedLog = selectedLogEntry {
+                InspectorView(logEntry: selectedLog)
+                    .frame(width: 300) // Adjust width as necessary
             }
         }
         .onAppear {
-            print("ContentView onAppear called.")
             viewModel.loadLogs()
         }
     }
