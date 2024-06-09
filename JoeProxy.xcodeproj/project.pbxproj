@@ -39,6 +39,8 @@
 		44AA3C712C13C72C00A8F465 /* SSLHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44AA3C702C13C72B00A8F465 /* SSLHandler.swift */; };
 		44DFAE632C153A96006CCE5C /* MockingLogService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44DFAE622C153A96006CCE5C /* MockingLogService.swift */; };
 		44DFAE652C155B85006CCE5C /* LogTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44DFAE642C155B85006CCE5C /* LogTableViewController.swift */; };
+		44DFAE672C1561D4006CCE5C /* LogViewModel+LoadLogs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44DFAE662C1561D4006CCE5C /* LogViewModel+LoadLogs.swift */; };
+		44DFAE692C1563A6006CCE5C /* LogViewModel+Setup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44DFAE682C1563A6006CCE5C /* LogViewModel+Setup.swift */; };
 		44EDF1F42C130DDC007D7C35 /* OpenSSLInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44EDF1F32C130DDC007D7C35 /* OpenSSLInstaller.swift */; };
 		44EDF1F62C130E10007D7C35 /* OpenSSLInstallerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44EDF1F52C130E10007D7C35 /* OpenSSLInstallerTests.swift */; };
 		44EDF1F82C131344007D7C35 /* MockOpenSSLInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44EDF1F72C131344007D7C35 /* MockOpenSSLInstaller.swift */; };
@@ -103,6 +105,8 @@
 		44BBD33A2C13A8FF0015BE8D /* JoeProxyTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "JoeProxyTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		44DFAE622C153A96006CCE5C /* MockingLogService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockingLogService.swift; sourceTree = "<group>"; };
 		44DFAE642C155B85006CCE5C /* LogTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogTableViewController.swift; sourceTree = "<group>"; };
+		44DFAE662C1561D4006CCE5C /* LogViewModel+LoadLogs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LogViewModel+LoadLogs.swift"; sourceTree = "<group>"; };
+		44DFAE682C1563A6006CCE5C /* LogViewModel+Setup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LogViewModel+Setup.swift"; sourceTree = "<group>"; };
 		44EDF1F32C130DDC007D7C35 /* OpenSSLInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenSSLInstaller.swift; sourceTree = "<group>"; };
 		44EDF1F52C130E10007D7C35 /* OpenSSLInstallerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenSSLInstallerTests.swift; sourceTree = "<group>"; };
 		44EDF1F72C131344007D7C35 /* MockOpenSSLInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockOpenSSLInstaller.swift; sourceTree = "<group>"; };
@@ -148,6 +152,8 @@
 				447355932C14EE7100B6C5A7 /* NetworkingServiceViewModel.swift */,
 				4402B6522C128F0100761AC5 /* LogView.swift */,
 				447355972C14FE5F00B6C5A7 /* LogViewModel.swift */,
+				44DFAE682C1563A6006CCE5C /* LogViewModel+Setup.swift */,
+				44DFAE662C1561D4006CCE5C /* LogViewModel+LoadLogs.swift */,
 				4473558F2C14E76000B6C5A7 /* InspectorView.swift */,
 				447355912C14ED1700B6C5A7 /* NetworkInfoView.swift */,
 				447355952C14FE3300B6C5A7 /* LogEntry.swift */,
@@ -400,6 +406,7 @@
 				445A3C942C126C3D008E68AE /* NetworkingService.swift in Sources */,
 				445A3C652C12647D008E68AE /* ContentView.swift in Sources */,
 				447355962C14FE3300B6C5A7 /* LogEntry.swift in Sources */,
+				44DFAE692C1563A6006CCE5C /* LogViewModel+Setup.swift in Sources */,
 				445A3C8E2C126616008E68AE /* ConfigurationService.swift in Sources */,
 				445A3CA42C127BCB008E68AE /* FilteringCriteria.swift in Sources */,
 				445A3CA62C127BE5008E68AE /* FilteringService.swift in Sources */,
@@ -408,6 +415,7 @@
 				44F0A2782C12B8B400FC8160 /* CertificateService.swift in Sources */,
 				44EDF1F82C131344007D7C35 /* MockOpenSSLInstaller.swift in Sources */,
 				447355982C14FE5F00B6C5A7 /* LogViewModel.swift in Sources */,
+				44DFAE672C1561D4006CCE5C /* LogViewModel+LoadLogs.swift in Sources */,
 				447355942C14EE7100B6C5A7 /* NetworkingServiceViewModel.swift in Sources */,
 				447355922C14ED1700B6C5A7 /* NetworkInfoView.swift in Sources */,
 				44EDF1F42C130DDC007D7C35 /* OpenSSLInstaller.swift in Sources */,

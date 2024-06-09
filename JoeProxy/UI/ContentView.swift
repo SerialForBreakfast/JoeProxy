@@ -33,6 +33,7 @@ struct ContentView: View {
                     networkingViewModel.isServerRunning ? networkingViewModel.stopServer() : networkingViewModel.startServer()
                 }
                 .padding()
+                //Must be UI Kit due to bug with Table ambiguous initializers
                 LogView(viewModel: viewModel, selectedLogEntry: $selectedLogEntry)
                 Button("Save Logs") {
                     viewModel.saveLogsToFile()
