@@ -1,49 +1,54 @@
+import Network
 import Foundation
-import SystemConfiguration
 
-class NetworkInformation {
+class NetworkInformation: ObservableObject {
     static let shared = NetworkInformation()
-
-    func getNetworkInformation() -> [(interface: String, ipAddress: String)] {
-        var addresses = [(interface: String, ipAddress: String)]()
-        
-        var ifaddr: UnsafeMutablePointer<ifaddrs>?
+    
+    @Published var networkInfo: [(interface: String, ipAddress: String)] = []
+    
+    private let monitor = NWPathMonitor()
+    private let queue = DispatchQueue.global(qos: .background)
+    
+    private init() {
+        refreshNetworkInfo()
+    }
+    
+    func refreshNetworkInfo() {
+        var interfaces: [NWInterface] = []
+        monitor.pathUpdateHandler = { path in
+            interfaces = path.availableInterfaces
+            DispatchQueue.main.async {
+                self.networkInfo = interfaces.compactMap { interface in
+                    let ipAddress = self.getIPAddress(for: interface)
+                    return (interface: interface.name ?? "Unknown", ipAddress: ipAddress ?? "N/A")
+                }
+            }
+        }
+        monitor.start(queue: queue)
+    }
+    
+    private func getIPAddress(for interface: NWInterface) -> String? {
+        var address: String?
+        var ifaddr: UnsafeMutablePointer<ifaddrs>? = nil
         if getifaddrs(&ifaddr) == 0 {
             var ptr = ifaddr
             while ptr != nil {
-                let interface = ptr!.pointee
-                let addrFamily = interface.ifa_addr.pointee.sa_family
-                
+                defer { ptr = ptr?.pointee.ifa_next }
+                guard let interfacePtr = ptr else { return nil }
+                let addrFamily = interfacePtr.pointee.ifa_addr.pointee.sa_family
                 if addrFamily == UInt8(AF_INET) || addrFamily == UInt8(AF_INET6) {
-                    let name = String(cString: interface.ifa_name)
-                    var address: String?
-                    
-                    if addrFamily == UInt8(AF_INET) {
-                        var addr = sockaddr_in()
-                        memcpy(&addr, interface.ifa_addr, MemoryLayout<sockaddr_in>.size)
-                        var buffer = [CChar](repeating: 0, count: Int(NI_MAXHOST))
-                        if getnameinfo(interface.ifa_addr, socklen_t(MemoryLayout<sockaddr_in>.size), &buffer, socklen_t(buffer.count), nil, socklen_t(0), NI_NUMERICHOST) == 0 {
-                            address = String(cString: buffer)
-                        }
-                    } else if addrFamily == UInt8(AF_INET6) {
-                        var addr = sockaddr_in6()
-                        memcpy(&addr, interface.ifa_addr, MemoryLayout<sockaddr_in6>.size)
-                        var buffer = [CChar](repeating: 0, count: Int(NI_MAXHOST))
-                        if getnameinfo(interface.ifa_addr, socklen_t(MemoryLayout<sockaddr_in6>.size), &buffer, socklen_t(buffer.count), nil, socklen_t(0), NI_NUMERICHOST) == 0 {
-                            address = String(cString: buffer)
-                        }
-                    }
-                    
-                    if let address = address, !address.starts(with: "127.") {
-                        addresses.append((interface: name, ipAddress: address))
+                    let name = String(cString: interfacePtr.pointee.ifa_name)
+                    if name == interface.name {
+                        var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+                        getnameinfo(interfacePtr.pointee.ifa_addr, socklen_t(interfacePtr.pointee.ifa_addr.pointee.sa_len),
+                                    &hostname, socklen_t(hostname.count),
+                                    nil, socklen_t(0), NI_NUMERICHOST)
+                        address = String(cString: hostname)
                     }
                 }
-                
-                ptr = ptr!.pointee.ifa_next
             }
             freeifaddrs(ifaddr)
         }
-        
-        return addresses
+        return address
     }
 }

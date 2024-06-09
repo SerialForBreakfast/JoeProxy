@@ -13,13 +13,14 @@ class NetworkingServiceViewModel: ObservableObject {
     @Published var ipAddress: String?
     @Published var port: Int = 8443
     @Published var isServerRunning: Bool = false
-    private var networkingService: DefaultNetworkingService
+    var networkingService: DefaultNetworkingService
+    @Published var networkInformation = NetworkInformation.shared
     @Published var networkInfo: [(interface: String, ipAddress: String?)] = []
-
+    
     init(networkingService: DefaultNetworkingService) {
         self.networkingService = networkingService
     }
-
+    
     func startServer() {
         do {
             try networkingService.startServer()
@@ -28,7 +29,7 @@ class NetworkingServiceViewModel: ObservableObject {
             print("Failed to start server: \(error)")
         }
     }
-
+    
     func stopServer() {
         do {
             try networkingService.stopServer()
@@ -37,9 +38,10 @@ class NetworkingServiceViewModel: ObservableObject {
             print("Failed to stop server: \(error)")
         }
     }
+    
     func refreshNetworkInfo() {
-        self.networkInfo = NetworkInformation.shared.getNetworkInformation()
-        if let firstInfo = networkInfo.first {
+        self.networkInformation.refreshNetworkInfo()
+        if let firstInfo = networkInformation.networkInfo.first {
             self.ipAddress = firstInfo.ipAddress
         }
     }

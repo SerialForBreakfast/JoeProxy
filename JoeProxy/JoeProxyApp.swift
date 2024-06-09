@@ -23,15 +23,15 @@ struct JoeProxyApp: App {
         .commands {
             CommandGroup(replacing: .help) {
                 Button("Setup Instructions") {
-                    openInstructionsWindow()                }
+                    openInstructionsWindow()
+                }
                 .keyboardShortcut("I", modifiers: [.command, .option])
             }
         }
-        .handlesExternalEvents(matching: ["SetupInstructions"])
     }
     
     func openInstructionsWindow() {
-        let instructionView = SetupInstructionsView(networkingViewModel: networkingViewModel, certificateService: certificateService)
+        let instructionView = SetupInstructionsView(certificateService: certificateService)
         let hostingController = NSHostingController(rootView: instructionView)
         let window = NSWindow(contentViewController: hostingController)
         window.setContentSize(NSSize(width: 600, height: 400))
@@ -40,5 +40,4 @@ struct JoeProxyApp: App {
         window.isReleasedWhenClosed = false
         window.makeKeyAndOrderFront(nil)
     }
-    
 }

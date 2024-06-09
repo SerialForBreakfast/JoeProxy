@@ -3,10 +3,12 @@ import SwiftUI
 struct SetupInstructionsView: View {
     @State private var selectedPlatform: Platform = .iOS
     @State private var selectedInterface: String = ""
-    @ObservedObject var networkingViewModel: NetworkingServiceViewModel
+    @ObservedObject private var networkInformation = NetworkInformation.shared
     private let certificateService: CertificateService
     
-    private let networkInfo = NetworkInformation.shared.getNetworkInformation()
+    init(certificateService: CertificateService) {
+        self.certificateService = certificateService
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -17,7 +19,7 @@ struct SetupInstructionsView: View {
                 .padding()
                 
                 Button("Refresh Network Information") {
-                    refreshNetworkInfo()
+                    networkInformation.refreshNetworkInfo()
                 }
                 .padding()
             }
@@ -33,49 +35,40 @@ struct SetupInstructionsView: View {
             .pickerStyle(SegmentedPickerStyle())
             .padding(.bottom, 20)
             
-            Picker("Select Network Interface", selection: $selectedInterface) {
-                ForEach(networkInfo, id: \.interface) { info in
-                    Text("\(info.interface): \(info.ipAddress)").tag(info.interface)
+            Picker("Select Interface", selection: $selectedInterface) {
+                ForEach(networkInformation.networkInfo, id: \.interface) { info in
+                    Text(info.interface).tag(info.interface)
                 }
             }
+            .pickerStyle(MenuPickerStyle())
             .padding(.bottom, 20)
             
-            if let selectedInfo = networkInfo.first(where: { $0.interface == selectedInterface }) {
-                Text("Server IP Address: \(selectedInfo.ipAddress)")
-                Text("Server Port: \(networkingViewModel.port)")
-            }
+            Text("Server IP Address: \(networkInformation.networkInfo.first { $0.interface == selectedInterface }?.ipAddress ?? "N/A")")
+            Text("Server Port: 8443")
+                .padding(.bottom, 20)
             
             ForEach(selectedPlatform.instructions, id: \.self) { instruction in
                 Text(instruction)
                     .padding(.bottom, 5)
+                    .textSelection(.enabled)
             }
             
             Spacer()
         }
         .padding()
-        .textSelection(.enabled) // Make the text selectable
-        .onAppear {
-            if let firstInterface = networkInfo.first {
-                selectedInterface = firstInterface.interface
-            }
-        }
     }
     
-    func shareCertificate() {
+    private func shareCertificate() {
         let url = certificateService.certificateURL
         let sharingPicker = NSSharingServicePicker(items: [url])
         if let view = NSApplication.shared.keyWindow?.contentView {
             sharingPicker.show(relativeTo: .zero, of: view, preferredEdge: .minY)
         }
     }
-
-    func refreshNetworkInfo() {
-        networkingViewModel.refreshNetworkInfo()
-    }
 }
 
-//struct SetupInstructionsView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        SetupInstructionsView(networkingViewModel: NetworkingServiceViewModel(networkingService: MockNetworkingService()), certificateService: CertificateService())
-//    }
-//}
+struct SetupInstructionsView_Previews: PreviewProvider {
+    static var previews: some View {
+        SetupInstructionsView(certificateService: CertificateService())
+    }
+}
