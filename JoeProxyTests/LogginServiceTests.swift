@@ -46,11 +46,13 @@ class LoggingServiceTests: XCTestCase {
         let expectation = XCTestExpectation(description: "Logs Publisher")
         var cancellable: AnyCancellable?
         
-        cancellable = loggingService.logsPublisher.sink { logs in
-            XCTAssertFalse(logs.isEmpty)
-            expectation.fulfill()
-            cancellable?.cancel()
-        }
+        cancellable = loggingService.logsPublisher
+            .dropFirst() // Ignore the initial empty value from CurrentValueSubject
+            .sink { logs in
+                XCTAssertFalse(logs.isEmpty, "Logs should not be empty")
+                expectation.fulfill()
+                cancellable?.cancel()
+            }
         
         loggingService.log("This is another test log message.", level: .debug)
         
@@ -65,42 +67,38 @@ class MockConfigurationService: ConfigurationService {
 }
 
 class MockLoggingService: LoggingService {
-    func saveLogsToFile(logs: [JoeProxy.LogEntry]) {
-        /// Stubb
+    private var loggedMessagesInternal: [String] = []
+    var logs: [String] {
+        return loggedMessagesInternal
     }
     
-    private let logsSubject = CurrentValueSubject<[String], Never>([
-        "[REQUEST] 2024-06-06 12:00:00 https://example.com/api Headers: Content-Type: application/json, Accept: */*",
-        "[RESPONSE] 2024-06-06 12:00:01 https://example.com/api Status: 200",
-        "[REQUEST] 2024-06-06 12:01:00 https://example.com/api Headers: Content-Type: application/json, Accept: */*",
-        "[RESPONSE] 2024-06-06 12:01:01 https://example.com/api Status: 404"
-    ])
-    
+    private let logsSubject = CurrentValueSubject<[String], Never>([])
     var logsPublisher: AnyPublisher<[String], Never> {
         logsSubject.eraseToAnyPublisher()
-    }
-    
-    var logs: [String] {
-        logsSubject.value
     }
     
     func logRequest(_ request: String, headers: [String: String], timestamp: Date) {
         let formattedHeaders = headers.map { "\($0.key): \($0.value)" }.joined(separator: ", ")
         let logMessage = "[REQUEST] \(timestamp) \(request) Headers: \(formattedHeaders)"
-        logsSubject.value.append(logMessage)
-        logsSubject.send(logsSubject.value)
+        log(logMessage, level: .info)
     }
     
     func logResponse(_ response: String, statusCode: Int, timestamp: Date) {
         let logMessage = "[RESPONSE] \(timestamp) \(response) Status: \(statusCode)"
-        logsSubject.value.append(logMessage)
-        logsSubject.send(logsSubject.value)
+        log(logMessage, level: .info)
     }
     
     func log(_ message: String, level: LogLevel) {
         let logMessage = "[\(level.rawValue.uppercased())] \(message)"
-        logsSubject.value.append(logMessage)
-        logsSubject.send(logsSubject.value)
+        loggedMessagesInternal.append(logMessage)
+        logsSubject.send(loggedMessagesInternal)
     }
     
+    func saveLogsToFile(logs: [LogEntry]) {
+        // Mock implementation, do nothing or log to internal storage
+    }
+
+    var loggedMessages: [String] {
+        return loggedMessagesInternal
+    }
 }

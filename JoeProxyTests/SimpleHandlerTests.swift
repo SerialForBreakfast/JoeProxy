@@ -39,7 +39,7 @@ final class SimpleHandlerTests: XCTestCase {
                 if case .byteBuffer(let byteBuffer) = responseBody {
                     let responseData = byteBuffer.getString(at: 0, length: byteBuffer.readableBytes)
                     XCTAssertEqual(responseData, "Request allowed: https://example.com/test")
-                    print("Response body received with data: \(responseData)")
+                    print("Response body received with data: \(String(describing: responseData))")
                 } else {
                     XCTFail("Expected ByteBuffer in response body")
                 }
@@ -80,7 +80,7 @@ final class SimpleHandlerTests: XCTestCase {
                 if case .byteBuffer(let byteBuffer) = responseBody {
                     let responseData = byteBuffer.getString(at: 0, length: byteBuffer.readableBytes)
                     XCTAssertEqual(responseData, "Request blocked: https://example.com/test")
-                    print("Response body received with data: \(responseData)")
+                    print("Response body received with data: \(String(describing: responseData))")
                 } else {
                     XCTFail("Expected ByteBuffer in response body")
                 }

@@ -112,7 +112,7 @@ class CertificateService: ObservableObject {
 
         let certChain = try NIOSSLCertificate.fromPEMFile(certificateURL.path)
         let key = try NIOSSLPrivateKey(file: pemURL.path, format: .pem)
-        let tlsConfig = TLSConfiguration.forServer(certificateChain: certChain.map { .certificate($0) }, privateKey: .privateKey(key))
+        let tlsConfig = TLSConfiguration.makeServerConfiguration(certificateChain: certChain.map { .certificate($0) }, privateKey: .privateKey(key))
         return try NIOSSLContext(configuration: tlsConfig)
     }
 }
