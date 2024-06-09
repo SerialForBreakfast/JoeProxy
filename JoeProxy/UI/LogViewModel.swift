@@ -57,7 +57,7 @@ class LogViewModel: ObservableObject {
     }
 
     func saveLogsToFile() {
-        loggingService.saveLogsToFile()
+        loggingService.saveLogsToFile(logs: logs)
     }
 
     func updateLogs(with newLogs: [LogEntry]) {

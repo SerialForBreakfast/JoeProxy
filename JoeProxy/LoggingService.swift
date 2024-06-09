@@ -17,7 +17,7 @@ protocol LoggingService {
     func log(_ message: String, level: LogLevel)
     var logs: [String] { get }
     var logsPublisher: AnyPublisher<[String], Never> { get }
-    func saveLogsToFile()
+    func saveLogsToFile(logs: [LogEntry])
 }
 
 class DefaultLoggingService: LoggingService {
@@ -52,16 +52,24 @@ class DefaultLoggingService: LoggingService {
         logsSubject.send(logs)
     }
     
-    func saveLogsToFile() {
-        let fileManager = FileManager.default
-        let urls = fileManager.urls(for: .documentDirectory, in: .userDomainMask)
-        guard let documentDirectory = urls.first else { return }
-        let logFileURL = documentDirectory.appendingPathComponent("network_logs.txt")
+    func saveLogsToFile(logs: [LogEntry]) {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd 'at' hh.mm.ss a"
+        let timestamp = dateFormatter.string(from: Date())
+        
+        let fileName = "\(timestamp) Logs.csv"
+        let path = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent(fileName)
+        
+        var csvText = "Timestamp,Request,Headers,Response,ResponseBody,StatusCode\n"
+        
+        for log in logs {
+            let newLine = "\(log.timestampString),\(log.request),\(log.headers),\(log.response),\(log.responseBody),\(log.statusCodeString)\n"
+            csvText.append(contentsOf: newLine)
+        }
         
         do {
-            let logData = logs.joined(separator: "\n").data(using: .utf8)
-            fileManager.createFile(atPath: logFileURL.path, contents: logData, attributes: nil)
-            print("Logs saved to file: \(logFileURL.path)")
+            try csvText.write(to: path, atomically: true, encoding: .utf8)
+            print("Logs saved to file: \(path)")
         } catch {
             print("Failed to save logs to file: \(error)")
         }

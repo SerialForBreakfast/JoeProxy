@@ -44,7 +44,7 @@ class MockLoggingService: LoggingService {
         logsSubject.send(logsSubject.value)
     }
     
-    func saveLogsToFile() {
+    func saveLogsToFile(logs: [LogEntry]) {
         // Mock implementation
     }
 }
