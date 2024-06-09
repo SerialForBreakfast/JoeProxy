@@ -1,10 +1,3 @@
-//
-//  SSLHandler.swift
-//  JoeProxy
-//
-//  Created by Joseph McCraw on 6/7/24.
-//
-
 import NIO
 import NIOHTTP1
 import NIOSSL
@@ -43,10 +36,10 @@ final class SSLHandler: ChannelInboundHandler {
 
         if filteringService.shouldAllowRequest(url: requestHead.uri) {
             loggingService.log("Request allowed: \(requestString)", level: .info)
-            sendResponse(context: context, status: .ok, body: "Request allowed: \(requestHead.uri)")
         } else {
             loggingService.log("Request blocked: \(requestString)", level: .info)
             sendResponse(context: context, status: .forbidden, body: "Request blocked: \(requestHead.uri)")
+            return
         }
     }
 
@@ -56,6 +49,7 @@ final class SSLHandler: ChannelInboundHandler {
 
     private func handleRequestEnd(context: ChannelHandlerContext) {
         loggingService.log("Request ended", level: .debug)
+        sendResponse(context: context, status: .ok, body: "Request processed successfully.")
     }
 
     private func sendResponse(context: ChannelHandlerContext, status: HTTPResponseStatus, body: String) {
@@ -65,7 +59,9 @@ final class SSLHandler: ChannelInboundHandler {
         let responseHead = HTTPResponseHead(version: .http1_1, status: status)
         context.write(self.wrapOutboundOut(.head(responseHead)), promise: nil)
         context.write(self.wrapOutboundOut(.body(.byteBuffer(buffer))), promise: nil)
-        context.writeAndFlush(self.wrapOutboundOut(.end(nil)), promise: nil)
+        context.writeAndFlush(self.wrapOutboundOut(.end(nil))).whenComplete { _ in
+            context.close(promise: nil)
+        }
     }
 
     func errorCaught(context: ChannelHandlerContext, error: Error) {

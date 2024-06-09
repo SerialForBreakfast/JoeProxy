@@ -65,6 +65,10 @@ class MockConfigurationService: ConfigurationService {
 }
 
 class MockLoggingService: LoggingService {
+    func saveLogsToFile(logs: [JoeProxy.LogEntry]) {
+        /// Stubb
+    }
+    
     private let logsSubject = CurrentValueSubject<[String], Never>([
         "[REQUEST] 2024-06-06 12:00:00 https://example.com/api Headers: Content-Type: application/json, Accept: */*",
         "[RESPONSE] 2024-06-06 12:00:01 https://example.com/api Status: 200",
@@ -99,7 +103,4 @@ class MockLoggingService: LoggingService {
         logsSubject.send(logsSubject.value)
     }
     
-    func saveLogsToFile() {
-        // Mock implementation
-    }
 }
