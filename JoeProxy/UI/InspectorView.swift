@@ -1,27 +1,21 @@
-//
-//  InspectorView.swift
-//  JoeProxy
-//
-//  Created by Joseph McCraw on 6/8/24.
-//
-
-import Foundation
 import SwiftUI
 
 struct InspectorView: View {
     let logEntry: LogEntry
-    
+
     var body: some View {
-        VStack {
-            Text("Inspector")
         VStack(alignment: .leading) {
             Text("Request: \(logEntry.request)")
                 .font(.headline)
             Text("Headers: \(logEntry.headers)")
                 .font(.subheadline)
+            Text("Response: \(logEntry.response)")
+                .font(.subheadline)
             Text("Status Code: \(logEntry.statusCode)")
                 .font(.subheadline)
-            Text("Response: \(prettifyJSON(logEntry.response))")
+            Text("Timestamp: \(logEntry.timestampString)")
+                .font(.subheadline)
+            Text("Response Body: \(prettifyJSON(logEntry.responseBody))")
                 .font(.body)
             Spacer()
         }

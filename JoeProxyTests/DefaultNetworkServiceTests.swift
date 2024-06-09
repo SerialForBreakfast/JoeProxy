@@ -34,11 +34,10 @@ final class DefaultNetworkingServiceTests: XCTestCase {
 
         let requestHead = HTTPRequestHead(version: HTTPVersion(major: 1, minor: 1), method: .GET, uri: "https://example.com/test")
         XCTAssertNoThrow(try channel.writeInbound(HTTPServerRequestPart.head(requestHead)))
-        
+
         var buffer = channel.allocator.buffer(capacity: 0)
         buffer.writeString("")
         XCTAssertNoThrow(try channel.writeInbound(HTTPServerRequestPart.body(buffer)))
-        
 
         XCTAssertNoThrow(try channel.writeInbound(HTTPServerRequestPart.end(nil)))
 
