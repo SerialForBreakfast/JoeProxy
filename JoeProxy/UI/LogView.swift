@@ -1,55 +1,5 @@
-//
-//  LogView.swift
-//  JoeProxy
-//
-//  Created by Joseph McCraw on 6/6/24.
-//
-
 import SwiftUI
 import Combine
-import Foundation
-
-class LogViewModel: ObservableObject {
-    @Published var logs: [LogEntry] = []
-    private let loggingService: LoggingService
-    private let logsSubject = CurrentValueSubject<[LogEntry], Never>([])
-
-    private var cancellables: Set<AnyCancellable> = []
-    var logsPublisher: AnyPublisher<[LogEntry], Never> {
-        $logs.eraseToAnyPublisher()
-    }
-    
-    init(loggingService: LoggingService) {
-        self.loggingService = loggingService
-        setupBindings()
-    }
-    
-    private func setupBindings() {
-        loggingService.logsPublisher
-            .sink { [weak self] logs in
-                self?.logs = logs.map { LogEntry(timestamp: Date(), request: $0, headers: "", response: "", statusCode: 200) } // Update as necessary
-            }
-            .store(in: &cancellables)
-    }
-    
-    func loadLogs() {
-            // Implement logic to load logs
-            logs = [
-                LogEntry(timestamp: Date(), request: "GET /index.html", headers: "Host: example.com\nUser-Agent: TestAgent", response: "200 OK", statusCode: 200),
-                LogEntry(timestamp: Date().addingTimeInterval(-60), request: "POST /api/data", headers: "Host: example.com\nContent-Type: application/json", response: "201 Created", statusCode: 201),
-                LogEntry(timestamp: Date().addingTimeInterval(-120), request: "GET /notfound.html", headers: "Host: example.com\nUser-Agent: TestAgent", response: "404 Not Found", statusCode: 404),
-                LogEntry(timestamp: Date().addingTimeInterval(-180), request: "DELETE /api/data/1", headers: "Host: example.com\nAuthorization: Bearer token", response: "204 No Content", statusCode: 204),
-                LogEntry(timestamp: Date().addingTimeInterval(-240), request: "PUT /api/data/1", headers: "Host: example.com\nContent-Type: application/json", response: "200 OK", statusCode: 200)
-            ]
-        logsSubject.send(logs)
-        }
-
-    
-    func saveLogsToFile() {
-        loggingService.saveLogsToFile()
-    }
-    
-}
 
 struct LogView: View {
     @ObservedObject var viewModel: LogViewModel
@@ -57,60 +7,51 @@ struct LogView: View {
     @State private var isPaused = false
     @State private var queuedLogs: [LogEntry] = []
     @Binding var selectedLogEntry: LogEntry?
-    
-    var filteredLogs: [LogEntry] {
-        if searchText.isEmpty {
-            return viewModel.logs
-        } else {
-            return viewModel.logs.filter { $0.request.contains(searchText) || $0.response.contains(searchText) }
-        }
-    }
-    
+    @State private var filterText: String = ""
+    @State private var cancellable: AnyCancellable?
+
+    private let filterSubject = PassthroughSubject<String, Never>()
+
     var body: some View {
         VStack {
             HStack {
-                TextField("Search logs...", text: $searchText)
+                TextField("Filter logs...", text: $filterText)
                     .padding()
-                
+                    .onChange(of: filterText) { newValue in
+                        filterSubject.send(newValue)
+                    }
                 Button(isPaused ? "Resume" : "Pause") {
                     isPaused.toggle()
-                    if !isPaused {
-                        viewModel.logs.append(contentsOf: queuedLogs)
-                        queuedLogs.removeAll()
-                    }
                 }
                 .padding()
             }
-            
-            Table(filteredLogs) {
+
+            Table(viewModel.filteredLogs(filterText)) {
                 TableColumn("Timestamp") { log in
-                    Text(log.timestamp, style: .date)
+                    Text(log.timestampString)
                 }
                 TableColumn("Request", value: \.request)
                 TableColumn("Headers", value: \.headers)
                 TableColumn("Response", value: \.response)
                 TableColumn("Status Code") { log in
-                    Text("\(log.statusCode)")
+                    Text(log.statusCodeString)
                 }
             }
-            .tableStyle(InsetTableStyle()) // Optional, to add table style
         }
-        .padding()
-        .onReceive(viewModel.$logs) { logs in
-            if isPaused {
-                queuedLogs.append(contentsOf: logs)
+        .onReceive(viewModel.logsPublisher) { logs in
+            if !isPaused {
+                viewModel.logs = logs
             }
         }
+        .onAppear {
+            cancellable = filterSubject
+                .debounce(for: .milliseconds(500), scheduler: RunLoop.main)
+                .removeDuplicates()
+                .sink { newFilterText in
+                    viewModel.filterLogs(with: newFilterText)
+                }
+        }
     }
-}
-
-struct LogEntry: Identifiable {
-    let id = UUID()
-    let timestamp: Date
-    let request: String
-    let headers: String
-    let response: String
-    let statusCode: Int
 }
 
 struct LogView_Previews: PreviewProvider {
@@ -120,6 +61,11 @@ struct LogView_Previews: PreviewProvider {
         LogView(viewModel: LogViewModel(loggingService: MockLoggingService()), selectedLogEntry: $selectedLogEntry)
     }
 }
+
+
+
+
+
 
 class MockLoggingService: LoggingService {
     private let logsSubject = CurrentValueSubject<[String], Never>([

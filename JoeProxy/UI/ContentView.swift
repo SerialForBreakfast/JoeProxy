@@ -8,7 +8,8 @@ struct ContentView: View {
     @State private var showingNetworkInfo = false
     @State private var showingInspector = false
     @State private var selectedLogEntry: LogEntry?
-
+    @State private var filterText: String = ""
+    
     var body: some View {
         VStack {
             HStack {
@@ -35,36 +36,34 @@ struct ContentView: View {
                 }
                 .padding()
             }
+            
+            LogView(viewModel: viewModel, selectedLogEntry: $selectedLogEntry)
+            Button("Save Logs") {
+                viewModel.saveLogsToFile()
+            }
+            .padding()
 
-            HStack {
-                VStack {
-                    LogView(viewModel: viewModel, selectedLogEntry: $selectedLogEntry)
-                    Button("Save Logs") {
-                        viewModel.saveLogsToFile()
-                    }
-                    .padding()
-                    
-                    Button("Network Information") {
-                        showingNetworkInfo.toggle()
-                    }
-                    .padding()
-                    .sheet(isPresented: $showingNetworkInfo) {
-                        NetworkInfoView()
-                    }
-                }
-                if let logEntry = selectedLogEntry {
-                    InspectorView(logEntry: logEntry)
-                        .frame(width: 300)
-                        .padding()
-                }
+            Button("Network Information") {
+                showingNetworkInfo.toggle()
+            }
+            .padding()
+            .sheet(isPresented: $showingNetworkInfo) {
+                NetworkInfoView()
             }
         }
         .onAppear {
+            print("ContentView onAppear called.")
             viewModel.loadLogs()
         }
         .onReceive(viewModel.logsPublisher) { logs in
+            // Automatically select the first log entry if available
             if selectedLogEntry == nil, let firstLog = logs.first {
                 selectedLogEntry = firstLog
+            }
+        }
+        .onChange(of: selectedLogEntry) { newSelection in
+            if let newLogEntry = newSelection {
+                viewModel.selectedLogEntry = newLogEntry
             }
         }
     }
