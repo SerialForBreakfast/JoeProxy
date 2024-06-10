@@ -27,13 +27,20 @@ class NetworkingServiceTests: XCTestCase {
     }
 
     override func tearDownWithError() throws {
-        try? networkingService.stopServer() // Use try? to safely attempt stopping the server
+
+        try? networkingService.stopServer(completion: { [weak self] result in
+//            self?.isServerRunning = false
+        })// Use try? to safely attempt stopping the server
         networkingService = nil
         configurationService = nil
     }
 
     func testStartAndStopServer() throws {
-        XCTAssertNoThrow(try networkingService.startServer())
-        XCTAssertNoThrow(try networkingService.stopServer())
+        XCTAssertNoThrow(try networkingService.startServer(completion: { [weak self] result in
+            
+        }))
+        XCTAssertNoThrow(try networkingService.stopServer(completion: { [weak self] result in
+            
+        }))
     }
 }

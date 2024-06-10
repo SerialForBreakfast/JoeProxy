@@ -33,7 +33,7 @@ class CertificateServiceTests: XCTestCase {
             organizationalUnit: "Test OU",
             country: "US",
             state: "Test State",
-            locality: "Test Locality"
+            locality: "Test Locality", completion: nil
         )
 
         DispatchQueue.global().asyncAfter(deadline: .now() + 5) {

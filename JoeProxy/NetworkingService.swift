@@ -1,10 +1,11 @@
 import Foundation
 import NIO
 import NIOSSL
+import NIOHTTP1
 
 protocol NetworkingService {
-    func startServer() throws
-    func stopServer() throws
+    func startServer(completion: @escaping (Result<Void, Error>) -> Void) throws
+    func stopServer(completion: @escaping (Result<Void, Error>) -> Void) throws
 }
 
 class DefaultNetworkingService: NetworkingService {
@@ -22,15 +23,15 @@ class DefaultNetworkingService: NetworkingService {
         self.certificateService = certificateService
     }
 
-    func startServer() throws {
+    func startServer(completion: @escaping (Result<Void, Error>) -> Void) throws {
         print("Starting SSL server setup...")
         
         // Ensure the certificate and PEM files exist
-        guard FileManager.default.fileExists(atPath: certificateService.certificateURL.path),
-              FileManager.default.fileExists(atPath: certificateService.pemURL.path) else {
+        if !FileManager.default.fileExists(atPath: certificateService.certificateURL.path) || !FileManager.default.fileExists(atPath: certificateService.pemURL.path) {
             print("Certificate and/or PEM files are missing at paths:")
             print("Certificate path: \(certificateService.certificateURL.path)")
             print("PEM path: \(certificateService.pemURL.path)")
+            completion(.failure(NSError(domain: "SSLServer", code: 1, userInfo: [NSLocalizedDescriptionKey: "Certificate and/or PEM files are missing"])))
             return
         }
 
@@ -49,7 +50,8 @@ class DefaultNetworkingService: NetworkingService {
             print("SSL context created successfully.")
         } catch {
             print("Failed to create SSL context: \(error)")
-            throw error
+            completion(.failure(error))
+            return
         }
         
         group = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
@@ -60,7 +62,9 @@ class DefaultNetworkingService: NetworkingService {
             .childChannelInitializer { channel in
                 print("Initializing child channel...")
                 return channel.pipeline.addHandler(NIOSSLServerHandler(context: sslContext)).flatMap {
-                    channel.pipeline.addHandler(SSLHandler(filteringService: self.filteringService, loggingService: self.loggingService))
+                    channel.pipeline.addHTTPServerHandlers().flatMap {
+                        channel.pipeline.addHandler(SSLHandler(filteringService: self.filteringService, loggingService: self.loggingService))
+                    }
                 }
             }
             .childChannelOption(ChannelOptions.socket(IPPROTO_TCP, TCP_NODELAY), value: 1)
@@ -68,28 +72,35 @@ class DefaultNetworkingService: NetworkingService {
             .childChannelOption(ChannelOptions.recvAllocator, value: AdaptiveRecvByteBufferAllocator())
         
         do {
-            channel = try bootstrap.bind(host: "localhost", port: 8443).wait() // Change to port 8443
+            channel = try bootstrap.bind(host: "localhost", port: 8443).wait()
             print("Server started and listening on \(String(describing: channel?.localAddress))")
+            completion(.success(()))
         } catch {
             print("Failed to start server: \(error)")
-            group = nil
-            throw error
+            completion(.failure(error))
         }
     }
 
-    func stopServer() throws {
+    func stopServer(completion: @escaping (Result<Void, Error>) -> Void) {
         print("Stopping SSL server...")
-        defer {
-            group = nil
-            channel = nil
-        }
         do {
             try channel?.close().wait()
             try group?.syncShutdownGracefully()
             print("Server stopped.")
+            completion(.success(()))
         } catch {
-            print("Failed to stop server gracefully: \(error)")
-            throw error
+            print("Failed to stop server: \(error)")
+            completion(.failure(error))
+        }
+    }
+}
+
+extension ChannelPipeline {
+    func addHTTPServerHandlers() -> EventLoopFuture<Void> {
+        return self.addHandler(HTTPServerPipelineHandler()).flatMap {
+            self.addHandler(HTTPResponseEncoder()).flatMap {
+                self.addHandler(ByteToMessageHandler(HTTPRequestDecoder(leftOverBytesStrategy: .forwardBytes)))
+            }
         }
     }
 }

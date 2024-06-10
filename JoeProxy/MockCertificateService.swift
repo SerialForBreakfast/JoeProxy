@@ -9,7 +9,7 @@ import Foundation
 import Combine
 
 class MockCertificateService: CertificateService {
-    override func generateCertificate(commonName: String? = nil, organization: String? = nil, organizationalUnit: String? = nil, country: String? = nil, state: String? = nil, locality: String? = nil)  {
+    override func generateCertificate(commonName: String? = nil, organization: String? = nil, organizationalUnit: String? = nil, country: String? = nil, state: String? = nil, locality: String? = nil, completion: (() -> Void)? = nil) {
         DispatchQueue.global(qos: .background).async {
             print("Mock certificate generation started...")
             self.certificateExists = true
@@ -29,6 +29,15 @@ class MockCertificateService: CertificateService {
 
 // Mock Networking Service to avoid actual network operations
 class MockNetworkingService: NetworkingService {
+    func startServer(completion: @escaping (Result<Void, any Error>) -> Void) throws {
+        let error = NSError()
+        completion(.failure(error))
+    }
+    
+    func stopServer(completion: @escaping (Result<Void, any Error>) -> Void) throws {
+        completion(.success(()))
+    }
+    
     private let configurationService: ConfigurationService
     private var isServerRunning = false
     

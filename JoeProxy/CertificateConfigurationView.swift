@@ -33,7 +33,7 @@ struct CertificateConfigurationView: View {
                 .textFieldStyle(RoundedBorderTextFieldStyle())
 
             Button(action: {
-                certificateService.generateCertificate(commonName: commonName, organization: organization, organizationalUnit: organizationalUnit, country: country, state: state, locality: locality)
+                certificateService.generateCertificate(commonName: commonName, organization: organization, organizationalUnit: organizationalUnit, country: country, state: state, locality: locality, completion: nil)
             }) {
                 Text("Generate Certificate")
                     .padding()

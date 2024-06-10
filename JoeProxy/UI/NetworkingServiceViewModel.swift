@@ -23,8 +23,10 @@ class NetworkingServiceViewModel: ObservableObject {
     
     func startServer() {
         do {
-            try networkingService.startServer()
-            isServerRunning = true
+            try networkingService.startServer(completion: { [weak self] result in
+                self?.isServerRunning = true
+                print("Started server")
+            })
         } catch {
             print("Failed to start server: \(error)")
         }
@@ -32,8 +34,9 @@ class NetworkingServiceViewModel: ObservableObject {
     
     func stopServer() {
         do {
-            try networkingService.stopServer()
-            isServerRunning = false
+            try networkingService.stopServer(completion: { [weak self] result in
+                self?.isServerRunning = false
+            })
         } catch {
             print("Failed to stop server: \(error)")
         }

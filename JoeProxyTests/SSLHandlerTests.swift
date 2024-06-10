@@ -17,27 +17,42 @@ final class SSLHandlerTests: XCTestCase {
     var loggingService: MockLoggingService!
     var handler: SSLHandler!
 
-    override func setUp() {
-        group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-        
-        // Create a mock SSL context for testing
-        let tlsConfig = TLSConfiguration.forServer(
-            certificateChain: [],
-            privateKey: .file("path/to/privateKey.pem"),
-            trustRoots: .certificates([])
-        )
-        let sslContext = try! NIOSSLContext(configuration: tlsConfig)
-        
-        // Initialize the channel with the NIOSSLHandler and SSLHandler
-        channel = EmbeddedChannel()
-        try! channel.pipeline.addHandler(NIOSSLServerHandler(context: sslContext)).wait()
-        
-        filteringService = MockFilteringService(shouldAllow: true)
-        loggingService = MockLoggingService()
-        handler = SSLHandler(filteringService: filteringService, loggingService: loggingService)
-        try! channel.pipeline.addHandler(handler).wait()
-    }
+    override func setUpWithError() throws {
+        super.setUp()
 
+        configurationService = BasicConfigurationService()
+        loggingService = DefaultLoggingService(configurationService: configurationService)
+        filteringService = DefaultFilteringService(criteria: FilteringCriteria(urls: ["example.com"], filterType: .allow))
+        certificateService = CertificateService(debug: true)
+        networkingService = DefaultNetworkingService(
+            configurationService: configurationService,
+            filteringService: filteringService,
+            loggingService: loggingService,
+            certificateService: certificateService
+        )
+
+        try? FileManager.default.removeItem(at: certificateService.certificateURL)
+        try? FileManager.default.removeItem(at: certificateService.pemURL)
+
+        let expectation = XCTestExpectation(description: "Certificate generation")
+        certificateService.generateCertificate {
+            expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 10)
+
+        let serverStartExpectation = XCTestExpectation(description: "Server start")
+        networkingService.startServer { result in
+            switch result {
+            case .success():
+                print("Server started successfully.")
+                serverStartExpectation.fulfill()
+            case .failure(let error):
+                XCTFail("Failed to start server: \(error)")
+                serverStartExpectation.fulfill()
+            }
+        }
+        wait(for: [serverStartExpectation], timeout: 10)
+    }
     override func tearDown() {
         XCTAssertNoThrow(try channel.finish())
         XCTAssertNoThrow(try group.syncShutdownGracefully())

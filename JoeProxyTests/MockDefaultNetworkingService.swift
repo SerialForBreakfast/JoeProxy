@@ -12,6 +12,14 @@ import NIOHTTP1
 
 // Mock Networking Service to avoid actual network operations
 class MockDefaultNetworkingService: NetworkingService {
+    func stopServer(completion: @escaping (Result<Void, any Error>) -> Void) throws {
+        completion(.failure(NSError()))
+    }
+    
+    func startServer(completion: @escaping (Result<Void, any Error>) -> Void) throws {
+        completion(.failure(NSError()))
+    }
+    
     private let configurationService: ConfigurationService
     private let filteringService: FilteringService
     private let loggingService: LoggingService

@@ -22,7 +22,9 @@ struct ContentView: View {
 
                 Button("Generate Certificate") {
                     do {
-                        try certificateService.generateCertificate()
+                        try certificateService.generateCertificate {
+                            print("Generated certificate certificateExists:  \(certificateService.certificateExists)")
+                        }
                     } catch {
                         print("Failed to generate certificate: \(error)")
                     }

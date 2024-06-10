@@ -32,14 +32,13 @@ final class SSLHandler: ChannelInboundHandler {
                 self.requestBody = requestBody
             }
         case .end:
-            print("Received request end")
+            print("Request end received.")
             handleRequestEnd(context: context)
         }
     }
 
     private func handleRequestEnd(context: ChannelHandlerContext) {
         guard let requestHead = requestHead else {
-            print("Request head is nil, closing context")
             context.close(promise: nil)
             return
         }
@@ -52,20 +51,16 @@ final class SSLHandler: ChannelInboundHandler {
 
         if filteringService.shouldAllowRequest(url: requestHead.uri) {
             loggingService.log("Request allowed: \(requestString)", level: .info)
-            print("Request allowed: \(requestString)")
             proxyRequest(context: context, requestHead: requestHead, requestBody: requestBody)
         } else {
             loggingService.log("Request blocked: \(requestString)", level: .info)
-            print("Request blocked: \(requestString)")
             sendResponse(context: context, status: .forbidden, body: "Request blocked: \(requestHead.uri)")
         }
     }
 
     private func proxyRequest(context: ChannelHandlerContext, requestHead: HTTPRequestHead, requestBody: ByteBuffer?) {
         guard let host = requestHead.headers["host"].first else {
-            let errorMsg = "Bad request: missing Host header"
-            print(errorMsg)
-            sendResponse(context: context, status: .badRequest, body: errorMsg)
+            sendResponse(context: context, status: .badRequest, body: "Bad request: missing Host header")
             return
         }
 
@@ -77,7 +72,6 @@ final class SSLHandler: ChannelInboundHandler {
             }
         let connect = bootstrap.connect(host: host, port: 80)
         connect.whenSuccess { channel in
-            print("Connected to upstream server \(host)")
             var headers = requestHead.headers
             headers.remove(name: "Host")
             headers.add(name: "Host", value: host)
@@ -90,15 +84,12 @@ final class SSLHandler: ChannelInboundHandler {
             channel.writeAndFlush(NIOAny(HTTPClientRequestPart.end(nil)), promise: nil)
         }
         connect.whenFailure { error in
-            let errorMsg = "Failed to connect to \(host): \(error)"
-            print(errorMsg)
-            self.loggingService.log(errorMsg, level: .error)
+            self.loggingService.log("Failed to connect to \(host): \(error)", level: .error)
             self.sendResponse(context: context, status: .internalServerError, body: "Failed to connect to upstream server")
         }
     }
 
     private func sendResponse(context: ChannelHandlerContext, status: HTTPResponseStatus, body: String) {
-        print("Sending response with status \(status): \(body)")
         var buffer = context.channel.allocator.buffer(capacity: body.utf8.count)
         buffer.writeString(body)
 
@@ -106,15 +97,12 @@ final class SSLHandler: ChannelInboundHandler {
         context.write(self.wrapOutboundOut(.head(responseHead)), promise: nil)
         context.write(self.wrapOutboundOut(.body(.byteBuffer(buffer))), promise: nil)
         context.writeAndFlush(self.wrapOutboundOut(.end(nil))).whenComplete { _ in
-            print("Response sent, closing context")
             context.close(promise: nil)
         }
     }
 
     func errorCaught(context: ChannelHandlerContext, error: Error) {
-        let errorMsg = "SSLHandler encountered error: \(error)"
-        print(errorMsg)
-        loggingService.log(errorMsg, level: .error)
+        loggingService.log("SSLHandler encountered error: \(error)", level: .error)
         context.close(promise: nil)
     }
 }
