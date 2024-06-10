@@ -103,3 +103,15 @@ class NIOConverter {
         return buffer
     }
 }
+
+// Extension for IOData with toByteBuffer method
+extension IOData {
+    func toByteBuffer(allocator: ByteBufferAllocator, fileIO: NonBlockingFileIO, eventLoop: EventLoop) -> EventLoopFuture<ByteBuffer?> {
+        switch self {
+        case .byteBuffer(let byteBuffer):
+            return eventLoop.makeSucceededFuture(byteBuffer)
+        case .fileRegion(let fileRegion):
+            return fileIO.read(fileRegion: fileRegion, allocator: allocator, eventLoop: eventLoop).map { $0 as ByteBuffer? }
+        }
+    }
+}
