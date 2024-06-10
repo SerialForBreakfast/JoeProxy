@@ -28,5 +28,8 @@
         <string>com.apple.coreservices.launchservicesd</string>
         <string>com.apple.coreservices.sharedfilelistd</string>
     </array>
+    <array>
+        <string>$(AppIdentifierPrefix)com.yourcompany.JoeProxy</string>
+    </array>
 </dict>
 </plist>

@@ -9,7 +9,7 @@ import Foundation
 import Combine
 
 class MockCertificateService: CertificateService {
-    override func generateCertificate() {
+    override func generateCertificate(commonName: String? = nil, organization: String? = nil, organizationalUnit: String? = nil, country: String? = nil, state: String? = nil, locality: String? = nil)  {
         DispatchQueue.global(qos: .background).async {
             print("Mock certificate generation started...")
             self.certificateExists = true

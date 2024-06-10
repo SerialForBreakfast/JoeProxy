@@ -28,6 +28,14 @@ struct JoeProxyApp: App {
                 .keyboardShortcut("I", modifiers: [.command, .option])
             }
         }
+        .commands {
+            CommandGroup(replacing: .newItem) {
+                Button("Open Certificate Configuration") {
+                    openCertificateConfigurationWindow()
+                }
+                .keyboardShortcut("N", modifiers: [.command])
+            }
+        }
     }
     
     func openInstructionsWindow() {
@@ -40,4 +48,16 @@ struct JoeProxyApp: App {
         window.isReleasedWhenClosed = false
         window.makeKeyAndOrderFront(nil)
     }
+    
+    func openCertificateConfigurationWindow() {
+        let certificateConfigurationView = CertificateConfigurationView(certificateService: certificateService)
+        let hostingController = NSHostingController(rootView: certificateConfigurationView)
+        let window = NSWindow(contentViewController: hostingController)
+        window.setContentSize(NSSize(width: 400, height: 300))
+        window.styleMask = [.titled, .closable, .resizable]
+        window.title = "Certificate Configuration"
+        window.isReleasedWhenClosed = false
+        window.makeKeyAndOrderFront(nil)
+    }
+
 }
