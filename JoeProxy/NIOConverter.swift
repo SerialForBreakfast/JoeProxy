@@ -30,9 +30,11 @@ class NIOConverter {
         }
         
         let requestHead = HTTPRequestHead(version: version, method: method, uri: uri, headers: headers)
-        return .head(requestHead)
+        let requestPart = HTTPServerRequestPart.head(requestHead)
+        print("Type of requestPart: \(type(of: requestPart))")
+        return requestPart
     }
-
+    
     static func byteBufferToHTTPResponsePart(_ buffer: inout ByteBuffer) throws -> HTTPServerResponsePart {
         guard let responseLine = buffer.readString(length: buffer.readableBytes) else {
             throw NIOConverterError.invalidData
@@ -40,12 +42,12 @@ class NIOConverter {
         
         let responseComponents = responseLine.split(separator: "\r\n")
         guard let statusLine = responseComponents.first?.split(separator: " "),
-              statusLine.count >= 3,
-              let statusCode = Int(statusLine[1]) else {
+              statusLine.count >= 3 else {
             throw NIOConverterError.invalidData
         }
-        let status = HTTPResponseStatus(statusCode: statusCode)
         
+        let statusCode = Int(statusLine[1]) ?? 200
+        let status = HTTPResponseStatus(statusCode: statusCode)
         var headers = HTTPHeaders()
         
         for headerLine in responseComponents.dropFirst() {
@@ -56,9 +58,11 @@ class NIOConverter {
         }
         
         let responseHead = HTTPResponseHead(version: HTTPVersion(major: 1, minor: 1), status: status, headers: headers)
-        return .head(responseHead)
+        let responsePart = HTTPServerResponsePart.head(responseHead)
+        print("Type of responsePart: \(type(of: responsePart))")
+        return responsePart
     }
-
+    
     static func httpRequestPartToByteBuffer(_ part: HTTPServerRequestPart, allocator: ByteBufferAllocator) -> ByteBuffer {
         var buffer = allocator.buffer(capacity: 256)
         
@@ -70,14 +74,15 @@ class NIOConverter {
             }
             buffer.writeString("\r\n")
         case .body(var body):
+            print("Type of body: \(type(of: body))")
             buffer.writeBuffer(&body)
         case .end:
             break
         }
         return buffer
     }
-
-    static func httpResponsePartToByteBuffer(_ part: HTTPServerResponsePart, allocator: ByteBufferAllocator) -> ByteBuffer {
+    
+    static func httpResponsePartToByteBuffer(_ part: HTTPServerResponsePart, allocator: ByteBufferAllocator, fileIO: NonBlockingFileIO, eventLoop: EventLoop) -> EventLoopFuture<ByteBuffer> {
         var buffer = allocator.buffer(capacity: 256)
         
         switch part {
@@ -87,24 +92,22 @@ class NIOConverter {
                 buffer.writeString("\(header.name): \(header.value)\r\n")
             }
             buffer.writeString("\r\n")
+            return eventLoop.makeSucceededFuture(buffer)
         case .body(let body):
             print("Type of body: \(type(of: body))")
-            
-            switch body {
-            case .byteBuffer(var byteBuffer):
-                buffer.writeBuffer(&byteBuffer)
-            case .fileRegion:
-                // Handle file region if needed
-                break
+            return body.toByteBuffer(allocator: allocator, fileIO: fileIO, eventLoop: eventLoop).map { byteBuffer in
+                var buffer = allocator.buffer(capacity: 256)
+                if var byteBuffer = byteBuffer {
+                    buffer.writeBuffer(&byteBuffer)
+                }
+                return buffer
             }
         case .end:
-            break
+            return eventLoop.makeSucceededFuture(buffer)
         }
-        return buffer
     }
 }
 
-// Extension for IOData with toByteBuffer method
 extension IOData {
     func toByteBuffer(allocator: ByteBufferAllocator, fileIO: NonBlockingFileIO, eventLoop: EventLoop) -> EventLoopFuture<ByteBuffer?> {
         switch self {

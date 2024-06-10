@@ -51,6 +51,9 @@
 		447355982C14FE5F00B6C5A7 /* LogViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 447355972C14FE5F00B6C5A7 /* LogViewModel.swift */; };
 		44AA3C712C13C72C00A8F465 /* SSLHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44AA3C702C13C72B00A8F465 /* SSLHandler.swift */; };
 		44C910192C16DDB9003AEFCB /* IODataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44C910182C16DDB9003AEFCB /* IODataTests.swift */; };
+		44C9101B2C16F133003AEFCB /* NIOTypeConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44C9101A2C16F133003AEFCB /* NIOTypeConverter.swift */; };
+		44C9101D2C16F24F003AEFCB /* NIOTypeConverterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44C9101C2C16F24F003AEFCB /* NIOTypeConverterTests.swift */; };
+		44C9101F2C16FB00003AEFCB /* JoeProxyApp+WindowLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44C9101E2C16FB00003AEFCB /* JoeProxyApp+WindowLogic.swift */; };
 		44DFAE632C153A96006CCE5C /* MockingLogService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44DFAE622C153A96006CCE5C /* MockingLogService.swift */; };
 		44DFAE652C155B85006CCE5C /* LogTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44DFAE642C155B85006CCE5C /* LogTableViewController.swift */; };
 		44EDF1F42C130DDC007D7C35 /* OpenSSLInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44EDF1F32C130DDC007D7C35 /* OpenSSLInstaller.swift */; };
@@ -129,6 +132,9 @@
 		44AA3C702C13C72B00A8F465 /* SSLHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SSLHandler.swift; sourceTree = "<group>"; };
 		44BBD33A2C13A8FF0015BE8D /* JoeProxyTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "JoeProxyTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		44C910182C16DDB9003AEFCB /* IODataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IODataTests.swift; sourceTree = "<group>"; };
+		44C9101A2C16F133003AEFCB /* NIOTypeConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NIOTypeConverter.swift; sourceTree = "<group>"; };
+		44C9101C2C16F24F003AEFCB /* NIOTypeConverterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NIOTypeConverterTests.swift; sourceTree = "<group>"; };
+		44C9101E2C16FB00003AEFCB /* JoeProxyApp+WindowLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JoeProxyApp+WindowLogic.swift"; sourceTree = "<group>"; };
 		44DFAE622C153A96006CCE5C /* MockingLogService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockingLogService.swift; sourceTree = "<group>"; };
 		44DFAE642C155B85006CCE5C /* LogTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogTableViewController.swift; sourceTree = "<group>"; };
 		44EDF1F32C130DDC007D7C35 /* OpenSSLInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenSSLInstaller.swift; sourceTree = "<group>"; };
@@ -219,6 +225,7 @@
 				44AA3C6F2C13BE6D00A8F465 /* Info.plist */,
 				4402B6512C128EF100761AC5 /* UI */,
 				445A3C622C12647D008E68AE /* JoeProxyApp.swift */,
+				44C9101E2C16FB00003AEFCB /* JoeProxyApp+WindowLogic.swift */,
 				4402B6542C12901500761AC5 /* BasicConfigurationService.swift */,
 				442463C42C1638D8002951DD /* NetworkMonitor.swift */,
 				44F0A2772C12B8B400FC8160 /* CertificateService.swift */,
@@ -232,6 +239,7 @@
 				445A3C932C126C3D008E68AE /* NetworkingService.swift */,
 				442463CA2C16B93E002951DD /* HTTPServerPipelineHandler.swift */,
 				442463CC2C16BA5A002951DD /* NIOConverter.swift */,
+				44C9101A2C16F133003AEFCB /* NIOTypeConverter.swift */,
 				4402B64F2C128BBC00761AC5 /* SimpleHandler.swift */,
 				445A3C662C12647F008E68AE /* Assets.xcassets */,
 				445A3C6B2C12647F008E68AE /* JoeProxy.entitlements */,
@@ -267,6 +275,7 @@
 				44F0A2792C13047A00FC8160 /* CertificateServiceTests.swift */,
 				442463CE2C16C7CB002951DD /* NIOConverterTests.swift */,
 				442463C82C169B58002951DD /* SSLProxyTests.swift */,
+				44C9101C2C16F24F003AEFCB /* NIOTypeConverterTests.swift */,
 				44BBD33A2C13A8FF0015BE8D /* JoeProxyTests-Bridging-Header.h */,
 				44EDF1FB2C131780007D7C35 /* MockOpenSSLInstaller.swift */,
 			);
@@ -443,10 +452,12 @@
 				445A3C652C12647D008E68AE /* ContentView.swift in Sources */,
 				447355962C14FE3300B6C5A7 /* LogEntry.swift in Sources */,
 				445A3C8E2C126616008E68AE /* ConfigurationService.swift in Sources */,
+				44C9101F2C16FB00003AEFCB /* JoeProxyApp+WindowLogic.swift in Sources */,
 				442463C12C15A57D002951DD /* NetworkInformation.swift in Sources */,
 				445A3CA42C127BCB008E68AE /* FilteringCriteria.swift in Sources */,
 				442463BD2C1589EB002951DD /* HTTPClientResponseHandler.swift in Sources */,
 				445A3CA62C127BE5008E68AE /* FilteringService.swift in Sources */,
+				44C9101B2C16F133003AEFCB /* NIOTypeConverter.swift in Sources */,
 				445A3C632C12647D008E68AE /* JoeProxyApp.swift in Sources */,
 				442463CD2C16BA5A002951DD /* NIOConverter.swift in Sources */,
 				44AA3C712C13C72C00A8F465 /* SSLHandler.swift in Sources */,
@@ -489,6 +500,7 @@
 				442463CF2C16C7CB002951DD /* NIOConverterTests.swift in Sources */,
 				442463C92C169B58002951DD /* SSLProxyTests.swift in Sources */,
 				4402B64E2C12891D00761AC5 /* FilteringServiceTests.swift in Sources */,
+				44C9101D2C16F24F003AEFCB /* NIOTypeConverterTests.swift in Sources */,
 				445A3C922C126737008E68AE /* LogginServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

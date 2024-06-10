@@ -13,20 +13,21 @@ class DefaultNetworkingService: NetworkingService {
     private let filteringService: FilteringService
     private let loggingService: LoggingService
     private var group: MultiThreadedEventLoopGroup?
-    private var channel: Channel?
+    var channel: Channel?
     private let certificateService: CertificateService
+    private let fileIO: NonBlockingFileIO
 
-    init(configurationService: ConfigurationService, filteringService: FilteringService, loggingService: LoggingService, certificateService: CertificateService) {
+    init(configurationService: ConfigurationService, filteringService: FilteringService, loggingService: LoggingService, certificateService: CertificateService, fileIO: NonBlockingFileIO) {
         self.configurationService = configurationService
         self.filteringService = filteringService
         self.loggingService = loggingService
         self.certificateService = certificateService
+        self.fileIO = fileIO
     }
 
     func startServer(completion: @escaping (Result<Void, Error>) -> Void) throws {
         print("Starting SSL server setup...")
         
-        // Ensure the certificate and PEM files exist
         if !FileManager.default.fileExists(atPath: certificateService.certificateURL.path) || !FileManager.default.fileExists(atPath: certificateService.pemURL.path) {
             print("Certificate and/or PEM files are missing at paths:")
             print("Certificate path: \(certificateService.certificateURL.path)")
@@ -40,12 +41,11 @@ class DefaultNetworkingService: NetworkingService {
         print("Certificate path: \(certificateURL)")
         print("PEM path: \(pemURL)")
 
-        // Create SSL context
         let sslContext: NIOSSLContext
         do {
             let certChain = try NIOSSLCertificate.fromPEMFile(certificateURL.path)
             let key = try NIOSSLPrivateKey(file: pemURL.path, format: .pem)
-            let tlsConfig = TLSConfiguration.forServer(certificateChain: certChain.map { .certificate($0) }, privateKey: .privateKey(key))
+            let tlsConfig = TLSConfiguration.makeServerConfiguration(certificateChain: certChain.map { .certificate($0) }, privateKey: .privateKey(key))
             sslContext = try NIOSSLContext(configuration: tlsConfig)
             print("SSL context created successfully.")
         } catch {
@@ -63,7 +63,7 @@ class DefaultNetworkingService: NetworkingService {
                 print("Initializing child channel...")
                 return channel.pipeline.addHandler(NIOSSLServerHandler(context: sslContext)).flatMap {
                     channel.pipeline.addHTTPServerHandlers().flatMap {
-                        channel.pipeline.addHandler(SSLHandler(filteringService: self.filteringService, loggingService: self.loggingService))
+                        channel.pipeline.addHandler(HTTPServerPipelineHandler())
                     }
                 }
             }

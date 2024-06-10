@@ -1,17 +1,58 @@
 import SwiftUI
+import NIO
+import NIOHTTP1
+import NIOSSL
+
+class DependencyInitializer {
+    let certificateService: CertificateService
+    let configurationService: ConfigurationService
+    let filteringService: FilteringService
+    let loggingService: LoggingService
+    let fileIO: NonBlockingFileIO
+    let group: MultiThreadedEventLoopGroup
+    let networkingService: DefaultNetworkingService
+    let viewModel: LogViewModel
+    let networkingViewModel: NetworkingServiceViewModel
+
+    init() {
+        self.certificateService = CertificateService()
+        self.configurationService = BasicConfigurationService()
+        self.filteringService = DefaultFilteringService(criteria: FilteringCriteria(urls: ["example.com"], filterType: .allow))
+        self.loggingService = DefaultLoggingService(configurationService: self.configurationService)
+        self.fileIO = NonBlockingFileIO(threadPool: NIOThreadPool(numberOfThreads: System.coreCount))
+        self.group = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
+
+        let eventLoop = self.group.next()
+        self.networkingService = DefaultNetworkingService(
+            configurationService: self.configurationService,
+            filteringService: self.filteringService,
+            loggingService: self.loggingService,
+            certificateService: self.certificateService,
+            fileIO: self.fileIO
+        )
+
+        self.viewModel = LogViewModel(loggingService: self.loggingService)
+        self.networkingViewModel = NetworkingServiceViewModel(networkingService: self.networkingService)
+    }
+}
 
 @main
 struct JoeProxyApp: App {
-    @StateObject private var certificateService = CertificateService()
-    private let configurationService = BasicConfigurationService()
-    private let filteringService = DefaultFilteringService(criteria: FilteringCriteria(urls: ["example.com"], filterType: .allow))
-    private let loggingService = DefaultLoggingService(configurationService: BasicConfigurationService())
-    private let networkingService = DefaultNetworkingService(configurationService: BasicConfigurationService(), filteringService: DefaultFilteringService(criteria: FilteringCriteria(urls: ["example.com"], filterType: .allow)), loggingService: DefaultLoggingService(configurationService: BasicConfigurationService()), certificateService: CertificateService())
-    @StateObject private var viewModel = LogViewModel(loggingService: DefaultLoggingService(configurationService: BasicConfigurationService()))
-    @StateObject private var networkingViewModel = NetworkingServiceViewModel(networkingService: DefaultNetworkingService(configurationService: BasicConfigurationService(), filteringService: DefaultFilteringService(criteria: FilteringCriteria(urls: ["example.com"], filterType: .allow)), loggingService: DefaultLoggingService(configurationService: BasicConfigurationService()), certificateService: CertificateService()))
+    init() {
+        self.init(initializer: DependencyInitializer())
+    }
     
+    @StateObject var certificateService: CertificateService
+    @StateObject private var viewModel: LogViewModel
+    @StateObject private var networkingViewModel: NetworkingServiceViewModel
     @State private var showSetupInstructions = false
-    
+
+    init(initializer: DependencyInitializer = DependencyInitializer()) {
+        _certificateService = StateObject(wrappedValue: initializer.certificateService)
+        _viewModel = StateObject(wrappedValue: initializer.viewModel)
+        _networkingViewModel = StateObject(wrappedValue: initializer.networkingViewModel)
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView(
@@ -23,12 +64,10 @@ struct JoeProxyApp: App {
         .commands {
             CommandGroup(replacing: .help) {
                 Button("Setup Instructions") {
-                    openInstructionsWindow()
+                    showSetupInstructions = true
                 }
                 .keyboardShortcut("I", modifiers: [.command, .option])
             }
-        }
-        .commands {
             CommandGroup(replacing: .newItem) {
                 Button("Open Certificate Configuration") {
                     openCertificateConfigurationWindow()
@@ -37,27 +76,4 @@ struct JoeProxyApp: App {
             }
         }
     }
-    
-    func openInstructionsWindow() {
-        let instructionView = SetupInstructionsView(certificateService: certificateService)
-        let hostingController = NSHostingController(rootView: instructionView)
-        let window = NSWindow(contentViewController: hostingController)
-        window.setContentSize(NSSize(width: 600, height: 400))
-        window.styleMask = [.titled, .closable, .resizable]
-        window.title = "Setup Instructions"
-        window.isReleasedWhenClosed = false
-        window.makeKeyAndOrderFront(nil)
-    }
-    
-    func openCertificateConfigurationWindow() {
-        let certificateConfigurationView = CertificateConfigurationView(certificateService: certificateService)
-        let hostingController = NSHostingController(rootView: certificateConfigurationView)
-        let window = NSWindow(contentViewController: hostingController)
-        window.setContentSize(NSSize(width: 400, height: 300))
-        window.styleMask = [.titled, .closable, .resizable]
-        window.title = "Certificate Configuration"
-        window.isReleasedWhenClosed = false
-        window.makeKeyAndOrderFront(nil)
-    }
-
 }

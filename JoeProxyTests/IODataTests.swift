@@ -54,32 +54,37 @@ final class IODataTests: XCTestCase {
     func testFileRegionConversion() throws {
         print("Running testFileRegionConversion...")
         
-        let allocator = ByteBufferAllocator()
-        let content = "Hello, FileRegion!"
-        let filePath = "/tmp/testFileRegion.txt"
+        let allocator: ByteBufferAllocator = ByteBufferAllocator()
+        let content: String = "Hello, FileRegion!"
+        let filePath: String = "/tmp/testFileRegion.txt"
         
         // Write content to file
         try content.write(toFile: filePath, atomically: true, encoding: .utf8)
         
-        let fileHandle = try NIOFileHandle(path: filePath)
-        let fileRegion = FileRegion(fileHandle: fileHandle, readerIndex: 0, endIndex: content.count)
+        let fileHandle: NIOFileHandle = try NIOFileHandle(path: filePath)
+        let fileRegion: FileRegion = FileRegion(fileHandle: fileHandle, readerIndex: 0, endIndex: content.count)
         let ioData: IOData = .fileRegion(fileRegion)
-        let eventLoop = group.next()
+        let eventLoop: EventLoop = group.next()
         
-        let future = ioData.toByteBuffer(allocator: allocator, fileIO: fileIO, eventLoop: eventLoop)
+        let future: EventLoopFuture<ByteBuffer?> = ioData.toByteBuffer(allocator: allocator, fileIO: fileIO, eventLoop: eventLoop)
         
-        future.whenSuccess { convertedBuffer in
-            guard let convertedBuffer = convertedBuffer else {
+        future.whenSuccess { (optionalConvertedBuffer: ByteBuffer?) in
+            guard let convertedBuffer: ByteBuffer = optionalConvertedBuffer else {
                 XCTFail("Conversion to ByteBuffer failed")
                 return
             }
             
-            XCTAssertEqual(convertedBuffer.getString(at: 0, length: content.count), content)
-            print("Original file content and converted ByteBuffer content are equal.")
+            // Using explicit method to resolve ambiguity
+            if let convertedString: String = (convertedBuffer as ByteBuffer).getString(at: 0, length: content.utf8.count) {
+                XCTAssertEqual(convertedString, content)
+                print("Original file content and converted ByteBuffer content are equal.")
+            } else {
+                XCTFail("Failed to convert ByteBuffer to String")
+            }
         }
         
         // Clean up
-        try future.wait()
+        _ = try future.wait()
         try fileHandle.close()
         try FileManager.default.removeItem(atPath: filePath)
     }

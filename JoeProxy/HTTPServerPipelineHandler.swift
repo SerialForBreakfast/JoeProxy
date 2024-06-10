@@ -1,73 +1,99 @@
-//
-//  HTTPServerPipelineHandler.swift
-//  JoeProxy
-//
-//  Created by Joseph McCraw on 6/9/24.
-//
-
 import NIO
 import NIOHTTP1
 
-final class HTTPServerPipelineHandler: ChannelDuplexHandler {
-    typealias InboundIn = ByteBuffer
-    typealias InboundOut = HTTPServerRequestPart
+class HTTPServerPipelineHandler: ChannelInboundHandler, ChannelOutboundHandler {
+    typealias InboundIn = HTTPServerRequestPart
+    typealias InboundOut = ByteBuffer
     typealias OutboundIn = HTTPServerResponsePart
     typealias OutboundOut = ByteBuffer
 
-    private var requestBuffer: ByteBuffer?
-    
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
-        var buffer = self.unwrapInboundIn(data)
-        
-        while buffer.readableBytes > 0 {
-                   guard let part = try? NIOConverter.byteBufferToHTTPRequestPart(&buffer) else {
-                       context.fireErrorCaught(NIOConverterError.invalidData)
-                       return
-                   }
-                   
-            switch part {
-            case .head(let head):
-                context.fireChannelRead(self.wrapInboundOut(.head(head)))
-            case .body(let body):
-                context.fireChannelRead(self.wrapInboundOut(.body(body)))
-            case .end:
-                context.fireChannelRead(self.wrapInboundOut(.end(nil)))
-            }
+        let requestPart: HTTPServerRequestPart = unwrapInboundIn(data)
+        switch requestPart {
+        case .head(let request):
+            print("Received request head: \(request)")
+        case .body(let buffer):
+            print("Received request body: \(buffer.getString(at: 0, length: buffer.readableBytes) ?? "")")
+        case .end:
+            let responseHead: HTTPResponseHead = HTTPResponseHead(version: .http1_1, status: .ok)
+            context.write(self.wrapOutboundOut(.head(responseHead)), promise: nil)
+            let responseBody: ByteBuffer = context.channel.allocator.buffer(string: "Hello, world!")
+            context.write(self.wrapOutboundOut(.body(.byteBuffer(responseBody))), promise: nil)
+            context.writeAndFlush(self.wrapOutboundOut(.end(nil)), promise: nil)
         }
     }
 
     func write(context: ChannelHandlerContext, data: NIOAny, promise: EventLoopPromise<Void>?) {
-//        let part = self.unwrapOutboundIn(data)
-//        
-//        switch part {
-//        case .head(let head):
-//            var buffer = context.channel.allocator.buffer(capacity: 128)
-//            buffer.writeString("HTTP/1.1 \(head.status.code) \(head.status.reasonPhrase)\r\n")
-//            for (name, value) in head.headers {
-//                buffer.writeString("\(name): \(value)\r\n")
-//            }
-//            buffer.writeString("\r\n")
-//            context.write(self.wrapOutboundOut(buffer), promise: promise)
-//        case .body(let body):
-//            context.write(self.wrapOutboundOut(body), promise: promise)
-//        case .end:
-//            var buffer = context.channel.allocator.buffer(capacity: 64)
-//            buffer.writeString("\r\n")
-//            context.write(self.wrapOutboundOut(buffer), promise: promise)
-//            context.flush()
-//        }
-        var buffer = unwrapInboundIn(data)
-        
-        do {
-            let responsePart = try NIOConverter.byteBufferToHTTPResponsePart(&buffer)
-            let responseBuffer = NIOConverter.httpResponsePartToByteBuffer(responsePart, allocator: context.channel.allocator)
-            context.write(wrapOutboundOut(responseBuffer), promise: promise)
-        } catch {
-            context.fireErrorCaught(error)
+        let responsePart: HTTPServerResponsePart = unwrapOutboundIn(data)
+        context.write(self.wrapOutboundOut(responsePart), promise: promise)
+    }
+
+    func unwrapOutboundIn(_ data: NIOAny) -> HTTPServerResponsePart {
+        let inboundData: ByteBuffer = unwrapInboundIn(data)
+        print("unwrapOutboundIn data of type: \(type(of: data)) unwrapInboundIn(data) \(type(of: inboundData))")
+        let returnData: HTTPPart<HTTPResponseHead, IOData> = HTTPServerResponsePart.body(.byteBuffer(inboundData))
+        return returnData
+    }
+
+    func wrapOutboundOut(_ data: HTTPServerResponsePart) -> NIOAny {
+        print("wrapOutboundOut data of type: \(type(of: data))")
+        switch data {
+        case .head(let responseHead):
+            return NIOAny(HTTPServerResponsePart.head(responseHead))
+        case .body(let ioData):
+            return NIOAny(HTTPServerResponsePart.body(ioData))
+        case .end(let headers):
+            return NIOAny(HTTPServerResponsePart.end(headers))
         }
     }
 
-    func errorCaught(context: ChannelHandlerContext, error: Error) {
-        context.fireErrorCaught(error)
+    // Helper methods for wrapping/unwrapping NIOAny
+    func unwrapInboundIn(_ data: NIOAny) -> ByteBuffer {
+        guard let buffer = data as? ByteBuffer else {
+            fatalError("Expected ByteBuffer but got \(type(of: data))")
+        }
+        print("unwrapInboundIn returning ByteBuffer of type: \(type(of: buffer))")
+        return buffer
+    }
+    
+    func wrapInboundOut(_ data: HTTPPart<HTTPRequestHead, ByteBuffer>) -> NIOAny {
+        print("wrapInboundOut wrapping HTTPPart<HTTPRequestHead, ByteBuffer> of type: \(type(of: data))")
+        return NIOAny(data)
     }
 }
+
+enum NIOHTTPDecoderError: Error {
+    case invalidData
+}
+
+//extension HTTPServerRequestPart {
+//    init(from buffer: inout ByteBuffer) throws {
+//        let decoder = HTTPRequestDecoder(leftOverBytesStrategy: .forwardBytes)
+//        var handler = ByteToMessageHandler(decoder)
+//        let context = ChannelHandlerContextMock()
+//        try handler.decode(context: context, buffer: &buffer)
+//        
+//        guard let part = context.readInbound() else {
+//            throw NIOHTTPDecoderError.invalidData
+//        }
+//        
+//        self = part
+//    }
+//}
+//
+//// Mock to simulate ChannelHandlerContext for decoding
+//final class ChannelHandlerContextMock: ChannelHandlerContext {
+//    private var inboundBuffer: [HTTPServerRequestPart] = []
+//    
+//    func readInbound() -> HTTPServerRequestPart? {
+//        return inboundBuffer.first
+//    }
+//    
+//    func fireChannelRead(_ data: NIOAny) {
+//        if let part = data as? HTTPServerRequestPart {
+//            inboundBuffer.append(part)
+//        }
+//    }
+//    
+//    // Implement other required methods for protocol conformance...
+//}

@@ -1,15 +1,10 @@
-//
-//  NIOConverterTests.swift
-//  JoeProxyTests
-//
-//  Created by Joseph McCraw on 6/9/24.
-//
 import XCTest
 import NIO
 import NIOHTTP1
 @testable import JoeProxy
 
 class NIOConverterTests: XCTestCase {
+    
     func testHttpRequestPartToByteBuffer() {
         let allocator = ByteBufferAllocator()
         let headers = HTTPHeaders([("Host", "localhost")])
@@ -25,6 +20,7 @@ class NIOConverterTests: XCTestCase {
         buffer.writeString("GET / HTTP/1.1\r\nHost: localhost\r\n\r\n")
         
         let requestPart = try NIOConverter.byteBufferToHTTPRequestPart(&buffer)
+        print("Type of requestPart: \(type(of: requestPart))")
         if case .head(let requestHead) = requestPart {
             XCTAssertEqual(requestHead.method, HTTPMethod.GET)
             XCTAssertEqual(requestHead.uri, "/")
@@ -39,9 +35,13 @@ class NIOConverterTests: XCTestCase {
         let headers = HTTPHeaders([("Content-Type", "text/plain")])
         let responseHead = HTTPResponseHead(version: HTTPVersion(major: 1, minor: 1), status: .ok, headers: headers)
         let responsePart = HTTPServerResponsePart.head(responseHead)
+        do {
+            let buffer = try NIOConverter.httpResponsePartToByteBuffer(responsePart, allocator: allocator, fileIO: NonBlockingFileIO(threadPool: NIOThreadPool(numberOfThreads: 1)), eventLoop: MultiThreadedEventLoopGroup(numberOfThreads: 1).next()).wait()
+            XCTAssertTrue(buffer.getString(at: 0, length: buffer.readableBytes)!.contains("HTTP/1.1 200 OK"))
+        } catch {
+            XCTFail()
+        }
         
-        let buffer = NIOConverter.httpResponsePartToByteBuffer(responsePart, allocator: allocator)
-        XCTAssertTrue(buffer.getString(at: 0, length: buffer.readableBytes)!.contains("HTTP/1.1 200 OK"))
     }
     
     func testByteBufferToHTTPResponsePart() throws {
@@ -50,7 +50,6 @@ class NIOConverterTests: XCTestCase {
         
         let responsePart = try NIOConverter.byteBufferToHTTPResponsePart(&buffer)
         print("Type of responsePart: \(type(of: responsePart))")
-        
         if case .head(let responseHead) = responsePart {
             XCTAssertEqual(responseHead.status, HTTPResponseStatus.ok)
             XCTAssertEqual(responseHead.headers["Content-Type"].first, "text/plain")

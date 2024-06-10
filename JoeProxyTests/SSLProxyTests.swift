@@ -1,18 +1,18 @@
 import XCTest
 import NIO
 import NIOHTTP1
-import NIOSSL
 @testable import JoeProxy
 
-
-class SSLProxyTests: XCTestCase {
-    var certificateService: CertificateService!
+final class SSLProxyTests: XCTestCase {
     var configurationService: MockConfigurationService!
     var loggingService: MockLoggingService!
     var filteringService: MockFilteringService!
+    var certificateService: CertificateService!
     var networkingService: DefaultNetworkingService!
     var eventLoopGroup: MultiThreadedEventLoopGroup!
-    var channel: Channel?
+    var fileIO: NonBlockingFileIO!
+    private var internalThreadPool: NIOThreadPool!
+    private var serverChannel: Channel?
 
     override func setUpWithError() throws {
         super.setUp()
@@ -21,28 +21,85 @@ class SSLProxyTests: XCTestCase {
         loggingService = MockLoggingService()
         filteringService = MockFilteringService(shouldAllow: true)
         certificateService = CertificateService()
+        
+        eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
+        internalThreadPool = NIOThreadPool(numberOfThreads: 2)
+        internalThreadPool.start()
+        fileIO = NonBlockingFileIO(threadPool: internalThreadPool)
+
         networkingService = DefaultNetworkingService(
             configurationService: configurationService,
             filteringService: filteringService,
             loggingService: loggingService,
-            certificateService: certificateService
+            certificateService: certificateService,
+            fileIO: fileIO
         )
 
-        eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
-//        try? FileManager.default.removeItem(at: certificateService.certificateURL)
-//        try? FileManager.default.removeItem(at: certificateService.pemURL)
-        let expectation = XCTestExpectation(description: "Server started")
-        certificateService.generateCertificate(completion: {
+        let expectation = XCTestExpectation(description: "Certificate generated")
+        certificateService.generateCertificate {
             expectation.fulfill()
-        })
+        }
         wait(for: [expectation], timeout: 10.0)
     }
     
     override func tearDownWithError() throws {
-        try FileManager.default.removeItem(atPath: "debugCerts")
-        super.tearDown()
+        if let channel = serverChannel {
+            try channel.close().wait()
+        }
+        try internalThreadPool.syncShutdownGracefully()
+        try eventLoopGroup.syncShutdownGracefully()
+        try super.tearDownWithError()
     }
-    
+
+    func testServerStart() throws {
+        let expectation = XCTestExpectation(description: "Server started")
+        
+        try networkingService.startServer { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success:
+                self.serverChannel = self.networkingService.channel
+                expectation.fulfill()
+            case .failure(let error):
+                XCTFail("Failed to start server: \(error)")
+            }
+        }
+        
+        wait(for: [expectation], timeout: 10.0)
+    }
+
+//    func testServerStop() throws {
+//        let startExpectation = XCTestExpectation(description: "Server started")
+//        
+//        try networkingService.startServer { [weak self] result in
+//            guard let self = self else { return }
+//            switch result {
+//            case .success:
+//                self.serverChannel = self.networkingService.channel
+//                startExpectation.fulfill()
+//            case .failure(let error):
+//                XCTFail("Failed to start server: \(error)")
+//            }
+//        }
+//        
+//        wait(for: [startExpectation], timeout: 10.0)
+//        
+//        let stopExpectation = XCTestExpectation(description: "Server stopped")
+//        networkingService.stopServer { result in
+//            switch result {
+//            case .success:
+//                stopExpectation.fulfill()
+//            case .failure(let error):
+//                XCTFail("Failed to stop server: \(error)")
+//            }
+//        }
+//        
+//        wait(for: [stopExpectation], timeout: 10.0)
+//    }
+}
+
+
+
 //    func testSSLProxyWithCurl() throws {
 //        let expectation = XCTestExpectation(description: "Server started")
 //        
@@ -75,4 +132,4 @@ class SSLProxyTests: XCTestCase {
 //        XCTAssertEqual(curlTask.terminationStatus, 0, "Curl command failed with exit code \(curlTask.terminationStatus)")
 //        XCTAssertTrue(output?.contains("JoeProxy") ?? false, "Curl output did not contain expected content. Output: \(output ?? "")")
 //    }
-}
+//}

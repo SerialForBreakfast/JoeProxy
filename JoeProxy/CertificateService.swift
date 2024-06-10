@@ -1,8 +1,6 @@
 import Foundation
 import Combine
 import Security
-import NIO
-import NIOSSL
 
 class CertificateService: ObservableObject {
     @Published var certificateExists: Bool = false
@@ -12,7 +10,7 @@ class CertificateService: ObservableObject {
     let pemURL: URL
     private var opensslPath: String = "/usr/bin/openssl"
     var opensslInstaller: OpenSSLInstaller
-    
+
     init(opensslInstaller: OpenSSLInstaller = OpenSSLInstaller(), debug: Bool = false) {
         self.opensslInstaller = opensslInstaller
         let fileManager = FileManager.default
@@ -32,7 +30,7 @@ class CertificateService: ObservableObject {
         setup()
         checkCertificateExists()
     }
-    
+
     func setup() {
         if let path = OpenSSLInstaller.findOpenSSLPath() {
             self.opensslPath = path
@@ -40,7 +38,7 @@ class CertificateService: ObservableObject {
             print("OpenSSL not found. Please install OpenSSL via Homebrew.")
         }
     }
-    
+
     func checkCertificateExists() {
         let fileManager = FileManager.default
         if fileManager.fileExists(atPath: certificateURL.path) && fileManager.fileExists(atPath: pemURL.path) {
@@ -54,55 +52,51 @@ class CertificateService: ObservableObject {
             self.certificateCreationDate = nil
         }
     }
-    
-    func generateCertificate(commonName: String? = "Default Common Name",
-                             organization: String? = "Default Organization",
-                             organizationalUnit: String? = "Default OU",
-                             country: String? = "US",
-                             state: String? = "Default State",
-                             locality: String? = "Default Locality") {
+
+    func generateCertificate(commonName: String? = nil, organization: String? = nil, organizationalUnit: String? = nil, country: String? = nil, state: String? = nil, locality: String? = nil, completion: (() -> Void)?) {
         DispatchQueue.global(qos: .background).async { [weak self] in
             do {
                 guard let self = self else { return }
                 print("Using OpensslPath \(self.opensslPath). Starting certificate generation...")
-                
+
                 guard FileManager.default.fileExists(atPath: self.opensslPath) else {
                     print("OpenSSL not found at path \(self.opensslPath). Please install OpenSSL via Homebrew.")
                     return
                 }
-                
+
                 let privateKeyProcess = Process()
                 privateKeyProcess.executableURL = URL(fileURLWithPath: self.opensslPath)
                 privateKeyProcess.arguments = ["genpkey", "-algorithm", "RSA", "-out", self.pemURL.path, "-pkeyopt", "rsa_keygen_bits:2048"]
-                
+
                 try privateKeyProcess.run()
                 privateKeyProcess.waitUntilExit()
-                
+
                 if privateKeyProcess.terminationStatus != 0 {
                     print("Failed to create private key")
                     return
                 }
-                
+
                 print("Private key written to \(self.pemURL.path)")
-                
+
                 let certProcess = Process()
                 certProcess.executableURL = URL(fileURLWithPath: self.opensslPath)
-                certProcess.arguments = ["req", "-x509", "-new", "-nodes", "-key", self.pemURL.path, "-sha256", "-days", "365", "-out", self.certificateURL.path, "-subj", "/CN=\(commonName!)/O=\(organization!)/OU=\(organizationalUnit!)/C=\(country!)/ST=\(state!)/L=\(locality!)"]
-                
+                certProcess.arguments = ["req", "-x509", "-new", "-nodes", "-key", self.pemURL.path, "-sha256", "-days", "365", "-out", self.certificateURL.path, "-subj", "/CN=\(commonName ?? "Test")/O=\(organization ?? "TestOrg")/OU=\(organizationalUnit ?? "TestUnit")/C=\(country ?? "US")/ST=\(state ?? "TestState")/L=\(locality ?? "TestLocality")"]
+
                 try certProcess.run()
                 certProcess.waitUntilExit()
-                
+
                 if certProcess.terminationStatus != 0 {
                     print("Failed to create certificate")
                     return
                 }
-                
+
                 print("Certificate written to \(self.certificateURL.path)")
-                
+
                 DispatchQueue.main.async {
                     self.certificateExists = true
                     self.certificateCreationDate = Date()
                     print("Certificate generation completed.")
+                    completion?()
                 }
             } catch {
                 print("Error generating certificate: \(error)")
