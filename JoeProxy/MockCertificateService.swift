@@ -29,13 +29,13 @@ class MockCertificateService: CertificateService {
 
 // Mock Networking Service to avoid actual network operations
 class MockNetworkingService: NetworkingService {
+    func stopServer(completion: @escaping (Result<Void, any Error>) -> Void) {
+            completion(.success(()))
+        }
+    
     func startServer(completion: @escaping (Result<Void, any Error>) -> Void) throws {
         let error = NSError()
         completion(.failure(error))
-    }
-    
-    func stopServer(completion: @escaping (Result<Void, any Error>) -> Void) throws {
-        completion(.success(()))
     }
     
     private let configurationService: ConfigurationService

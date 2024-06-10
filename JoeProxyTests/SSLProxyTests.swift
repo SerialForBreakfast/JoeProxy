@@ -68,34 +68,52 @@ final class SSLProxyTests: XCTestCase {
         wait(for: [expectation], timeout: 10.0)
     }
 
-//    func testServerStop() throws {
-//        let startExpectation = XCTestExpectation(description: "Server started")
-//        
-//        try networkingService.startServer { [weak self] result in
-//            guard let self = self else { return }
-//            switch result {
-//            case .success:
-//                self.serverChannel = self.networkingService.channel
-//                startExpectation.fulfill()
-//            case .failure(let error):
-//                XCTFail("Failed to start server: \(error)")
-//            }
-//        }
-//        
-//        wait(for: [startExpectation], timeout: 10.0)
-//        
-//        let stopExpectation = XCTestExpectation(description: "Server stopped")
-//        networkingService.stopServer { result in
-//            switch result {
-//            case .success:
-//                stopExpectation.fulfill()
-//            case .failure(let error):
-//                XCTFail("Failed to stop server: \(error)")
-//            }
-//        }
-//        
-//        wait(for: [stopExpectation], timeout: 10.0)
-//    }
+    func testServerStop() throws {
+        // Start the server and check the result synchronously
+        let startResult = try startServerSync()
+        switch startResult {
+        case .success:
+            print("Server started successfully")
+        case .failure(let error):
+            XCTFail("Failed to start server: \(error)")
+            return
+        }
+        
+        // Stop the server and check the result synchronously
+        let stopResult = try stopServerSync()
+        switch stopResult {
+        case .success:
+            print("Server stopped successfully")
+        case .failure(let error):
+            XCTFail("Failed to stop server: \(error)")
+        }
+    }
+
+    func startServerSync() throws -> Result<Void, Error> {
+        let semaphore = DispatchSemaphore(value: 0)
+        var result: Result<Void, Error> = .failure(NSError(domain: "Unknown", code: 0, userInfo: nil))
+        
+        try networkingService.startServer { startResult in
+            result = startResult
+            semaphore.signal()
+        }
+        
+        _ = semaphore.wait(timeout: .now() + 10)  // 10 seconds timeout
+        return result
+    }
+
+    func stopServerSync() throws -> Result<Void, Error> {
+        let semaphore = DispatchSemaphore(value: 0)
+        var result: Result<Void, Error> = .failure(NSError(domain: "Unknown", code: 0, userInfo: nil))
+        
+        networkingService.stopServer { stopResult in
+            result = stopResult
+            semaphore.signal()
+        }
+        
+        _ = semaphore.wait(timeout: .now() + 10)  // 10 seconds timeout
+        return result
+    }
 }
 
 

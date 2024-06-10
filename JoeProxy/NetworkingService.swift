@@ -5,7 +5,7 @@ import NIOHTTP1
 
 protocol NetworkingService {
     func startServer(completion: @escaping (Result<Void, Error>) -> Void) throws
-    func stopServer(completion: @escaping (Result<Void, Error>) -> Void) throws
+    func stopServer(completion: @escaping (Result<Void, Error>) -> Void)
 }
 
 class DefaultNetworkingService: NetworkingService {
@@ -16,7 +16,10 @@ class DefaultNetworkingService: NetworkingService {
     var channel: Channel?
     private let certificateService: CertificateService
     private let fileIO: NonBlockingFileIO
-
+    
+    private(set) var serverIP: String?
+    private(set) var serverPort: Int?
+    
     init(configurationService: ConfigurationService, filteringService: FilteringService, loggingService: LoggingService, certificateService: CertificateService, fileIO: NonBlockingFileIO) {
         self.configurationService = configurationService
         self.filteringService = filteringService
@@ -24,7 +27,7 @@ class DefaultNetworkingService: NetworkingService {
         self.certificateService = certificateService
         self.fileIO = fileIO
     }
-
+    
     func startServer(completion: @escaping (Result<Void, Error>) -> Void) throws {
         print("Starting SSL server setup...")
         
@@ -35,12 +38,12 @@ class DefaultNetworkingService: NetworkingService {
             completion(.failure(NSError(domain: "SSLServer", code: 1, userInfo: [NSLocalizedDescriptionKey: "Certificate and/or PEM files are missing"])))
             return
         }
-
+        
         let certificateURL = certificateService.certificateURL
         let pemURL = certificateService.pemURL
         print("Certificate path: \(certificateURL)")
         print("PEM path: \(pemURL)")
-
+        
         let sslContext: NIOSSLContext
         do {
             let certChain = try NIOSSLCertificate.fromPEMFile(certificateURL.path)
@@ -62,45 +65,70 @@ class DefaultNetworkingService: NetworkingService {
             .childChannelInitializer { channel in
                 print("Initializing child channel...")
                 return channel.pipeline.addHandler(NIOSSLServerHandler(context: sslContext)).flatMap {
-                    channel.pipeline.addHTTPServerHandlers().flatMap {
-                        channel.pipeline.addHandler(HTTPServerPipelineHandler())
+                    channel.pipeline.addHandler(HTTPResponseEncoder()).flatMap {
+                        channel.pipeline.addHandler(ByteToMessageHandler(HTTPRequestDecoder(leftOverBytesStrategy: .forwardBytes))).flatMap {
+                            channel.pipeline.addHandler(HTTPServerPipelineHandler())
+                        }
                     }
                 }
             }
             .childChannelOption(ChannelOptions.socket(IPPROTO_TCP, TCP_NODELAY), value: 1)
             .childChannelOption(ChannelOptions.maxMessagesPerRead, value: 16)
             .childChannelOption(ChannelOptions.recvAllocator, value: AdaptiveRecvByteBufferAllocator())
+
         
         do {
-            channel = try bootstrap.bind(host: "localhost", port: 8443).wait()
-            print("Server started and listening on \(String(describing: channel?.localAddress))")
+            channel = try bootstrap.bind(host: "localhost", port: 0).wait() // Bind to port 0 for dynamic port assignment
+            if let localAddress = channel?.localAddress, let assignedPort = localAddress.port {
+                serverPort = assignedPort
+                switch localAddress {
+                case .v4(let address):
+                    serverIP = address.host
+                case .v6(let address):
+                    serverIP = address.host
+                default:
+                    break
+                }
+                print("Server started and listening on \(localAddress) serverIP \(serverIP) serverPort \(serverPort)")
+                
+            }
             completion(.success(()))
         } catch {
             print("Failed to start server: \(error)")
             completion(.failure(error))
         }
     }
-
+    
     func stopServer(completion: @escaping (Result<Void, Error>) -> Void) {
         print("Stopping SSL server...")
-        do {
-            try channel?.close().wait()
-            try group?.syncShutdownGracefully()
-            print("Server stopped.")
+        guard let channel = channel else {
             completion(.success(()))
-        } catch {
-            print("Failed to stop server: \(error)")
-            completion(.failure(error))
+            return
         }
-    }
-}
 
-extension ChannelPipeline {
-    func addHTTPServerHandlers() -> EventLoopFuture<Void> {
-        return self.addHandler(HTTPServerPipelineHandler()).flatMap {
-            self.addHandler(HTTPResponseEncoder()).flatMap {
-                self.addHandler(ByteToMessageHandler(HTTPRequestDecoder(leftOverBytesStrategy: .forwardBytes)))
+        // Close the channel and handle the shutdown gracefully
+        channel.close().whenComplete { [weak self] result in
+            guard let self = self else {
+                completion(.success(()))
+                return
+            }
+
+            self.group!.shutdownGracefully { error in
+                if let error = error {
+                    print("Failed to stop server: \(error)")
+                    completion(.failure(error))
+                } else {
+                    print("Server stopped.")
+                    completion(.success(()))
+                }
             }
         }
     }
+    
+//    private func makeDummyFuture() -> EventLoopFuture<Void> {
+//        let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+//        let promise = eventLoopGroup.next().makePromise(of: Void.self)
+//        promise.succeed(())
+//        return promise.futureResult
+//    }
 }
