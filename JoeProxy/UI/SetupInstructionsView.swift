@@ -1,74 +1,47 @@
 import SwiftUI
 
-struct SetupInstructionsView: View {
-    @State private var selectedPlatform: Platform = .iOS
-    @State private var selectedInterface: String = ""
-    @ObservedObject private var networkInformation = NetworkInformation.shared
-    private let certificateService: CertificateService
-    
-    init(certificateService: CertificateService) {
-        self.certificateService = certificateService
-    }
-    
+struct SetupInstructionView: View {
+    @ObservedObject var networkingViewModel: NetworkingServiceViewModel
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack {
             HStack {
-                Button("Share Certificate") {
-                    shareCertificate()
-                }
-                .padding()
-                
-                Button("Refresh Network Information") {
-                    networkInformation.refreshNetworkInfo()
+                Text("Server Status:")
+                Circle()
+                    .fill(networkingViewModel.isServerRunning ? Color.green : Color.red)
+                    .frame(width: 20, height: 20)
+                Button(networkingViewModel.isServerRunning ? "Stop Server" : "Start Server") {
+                    networkingViewModel.isServerRunning ? networkingViewModel.stopServer() : networkingViewModel.startServer()
                 }
                 .padding()
             }
+            .padding()
+
             Text("Setup Instructions")
                 .font(.title)
-                .padding(.bottom, 20)
-            
-            Picker("Select Platform", selection: $selectedPlatform) {
-                ForEach(Platform.allCases) { platform in
-                    Text(platform.rawValue).tag(platform)
-                }
-            }
-            .pickerStyle(SegmentedPickerStyle())
-            .padding(.bottom, 20)
-            
-            Picker("Select Interface", selection: $selectedInterface) {
-                ForEach(networkInformation.networkInfo, id: \.interface) { info in
-                    Text(info.interface).tag(info.interface)
-                }
-            }
+                .padding()
+
+            Text("Current IP: \(networkingViewModel.ipAddress ?? "N/A")")
+            Text("Current Port: \(networkingViewModel.port)")
+
+            Picker("Network Interface", selection: $networkingViewModel.selectedInterface) {
+                            ForEach(networkingViewModel.networkInfo) { interface in
+                                Text(interface.interface)
+                            }
+                        }
             .pickerStyle(MenuPickerStyle())
-            .padding(.bottom, 20)
-            
-            Text("Server IP Address: \(networkInformation.networkInfo.first { $0.interface == selectedInterface }?.ipAddress ?? "N/A")")
-            Text("Server Port: 8443")
-                .padding(.bottom, 20)
-            
-            ForEach(selectedPlatform.instructions, id: \.self) { instruction in
-                Text(instruction)
-                    .padding(.bottom, 5)
-                    .textSelection(.enabled)
-            }
-            
+            .onAppear {
+                            networkingViewModel.refreshNetworkInfo()
+                            networkingViewModel.selectedInterface = networkingViewModel.networkInfo.first
+                        }
             Spacer()
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding()
-    }
-    
-    private func shareCertificate() {
-        let url = certificateService.certificateURL
-        let sharingPicker = NSSharingServicePicker(items: [url])
-        if let view = NSApplication.shared.keyWindow?.contentView {
-            sharingPicker.show(relativeTo: .zero, of: view, preferredEdge: .minY)
-        }
-    }
-}
-
-struct SetupInstructionsView_Previews: PreviewProvider {
-    static var previews: some View {
-        SetupInstructionsView(certificateService: CertificateService())
+        .background(ScrollView {
+            VStack {
+                // Content goes here
+            }
+        })
     }
 }

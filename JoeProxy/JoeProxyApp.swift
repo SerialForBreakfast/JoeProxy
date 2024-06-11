@@ -13,7 +13,7 @@ class DependencyInitializer {
     let networkingService: DefaultNetworkingService
     let viewModel: LogViewModel
     let networkingViewModel: NetworkingServiceViewModel
-
+    
     init() {
         self.certificateService = CertificateService()
         self.configurationService = BasicConfigurationService()
@@ -21,7 +21,7 @@ class DependencyInitializer {
         self.loggingService = DefaultLoggingService(configurationService: self.configurationService)
         self.fileIO = NonBlockingFileIO(threadPool: NIOThreadPool(numberOfThreads: System.coreCount))
         self.group = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
-
+        
         let eventLoop = self.group.next()
         self.networkingService = DefaultNetworkingService(
             configurationService: self.configurationService,
@@ -30,7 +30,7 @@ class DependencyInitializer {
             certificateService: self.certificateService,
             fileIO: self.fileIO
         )
-
+        
         self.viewModel = LogViewModel(loggingService: self.loggingService)
         self.networkingViewModel = NetworkingServiceViewModel(networkingService: self.networkingService)
     }
@@ -51,8 +51,10 @@ struct JoeProxyApp: App {
     
     @StateObject var certificateService: CertificateService
     @StateObject private var viewModel: LogViewModel
-    @StateObject private var networkingViewModel: NetworkingServiceViewModel
+    @StateObject var networkingViewModel: NetworkingServiceViewModel
     @State private var showSetupInstructions = false
+    @State private var showInspectorView = false
+    @State private var showCertificateConfiguration = false
     @State private var selectedUI: UIPrototype = .prototypeA  // Default to new prototype
 
     init(initializer: DependencyInitializer = DependencyInitializer()) {
@@ -75,6 +77,11 @@ struct JoeProxyApp: App {
                     viewModel: viewModel,
                     networkingViewModel: networkingViewModel
                 )
+                .onAppear {
+                    showSetupInstructions = true
+                    showInspectorView = true
+                    showCertificateConfiguration = true
+                }
             }
         }
         .commands {
@@ -85,11 +92,45 @@ struct JoeProxyApp: App {
                 .keyboardShortcut("I", modifiers: [.command, .option])
             }
             CommandGroup(replacing: .newItem) {
-                Button("Open Certificate Configuration") {
-                    openCertificateConfigurationWindow()
+                Button("Open Inspector View") {
+                    showInspectorView = true
                 }
-                .keyboardShortcut("N", modifiers: [.command])
+                .keyboardShortcut("I", modifiers: [.command])
+                Button("Open Certificate Configuration") {
+                    showCertificateConfiguration = true
+                }
+                .keyboardShortcut("C", modifiers: [.command])
             }
         }
+//
+//        if showSetupInstructions {
+            WindowGroup("Setup Instructions") {
+                SetupInstructionView(networkingViewModel: networkingViewModel)
+                    .frame(minWidth: 600, minHeight: 400)
+                    .onDisappear {
+                        showSetupInstructions = false
+                    }
+            }
+//        }
+//
+//        if showInspectorView {
+//            WindowGroup("Inspector View") {
+//                InspectorView(logEntry: viewModel.selectedLogEntry ?? LogEntry.default)
+//                    .frame(minWidth: 600, minHeight: 400)
+//                    .onDisappear {
+//                        showInspectorView = false
+//                    }
+//            }
+//        }
+//
+//        if showCertificateConfiguration {
+//            WindowGroup("Certificate Configuration") {
+//                CertificateConfigurationView(certificateService: certificateService)
+//                    .frame(minWidth: 600, minHeight: 400)
+//                    .onDisappear {
+//                        showCertificateConfiguration = false
+//                    }
+//            }
+//        }
     }
 }

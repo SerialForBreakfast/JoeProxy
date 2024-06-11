@@ -55,6 +55,7 @@
 		44C9101D2C16F24F003AEFCB /* NIOTypeConverterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44C9101C2C16F24F003AEFCB /* NIOTypeConverterTests.swift */; };
 		44C9101F2C16FB00003AEFCB /* JoeProxyApp+WindowLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44C9101E2C16FB00003AEFCB /* JoeProxyApp+WindowLogic.swift */; };
 		44DB7EF62C17BBC300407B2B /* NIOAny+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44DB7EF52C17BBC300407B2B /* NIOAny+Extensions.swift */; };
+		44DB7EF92C182F3200407B2B /* NetworkInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44DB7EF82C182F3200407B2B /* NetworkInterface.swift */; };
 		44DFAE632C153A96006CCE5C /* MockingLogService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44DFAE622C153A96006CCE5C /* MockingLogService.swift */; };
 		44DFAE652C155B85006CCE5C /* LogTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44DFAE642C155B85006CCE5C /* LogTableViewController.swift */; };
 		44EDF1F42C130DDC007D7C35 /* OpenSSLInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44EDF1F32C130DDC007D7C35 /* OpenSSLInstaller.swift */; };
@@ -138,6 +139,7 @@
 		44C9101E2C16FB00003AEFCB /* JoeProxyApp+WindowLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JoeProxyApp+WindowLogic.swift"; sourceTree = "<group>"; };
 		44DB7EF52C17BBC300407B2B /* NIOAny+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NIOAny+Extensions.swift"; sourceTree = "<group>"; };
 		44DB7EF72C17F86500407B2B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		44DB7EF82C182F3200407B2B /* NetworkInterface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkInterface.swift; sourceTree = "<group>"; };
 		44DFAE622C153A96006CCE5C /* MockingLogService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockingLogService.swift; sourceTree = "<group>"; };
 		44DFAE642C155B85006CCE5C /* LogTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogTableViewController.swift; sourceTree = "<group>"; };
 		44EDF1F32C130DDC007D7C35 /* OpenSSLInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenSSLInstaller.swift; sourceTree = "<group>"; };
@@ -188,10 +190,12 @@
 				447355972C14FE5F00B6C5A7 /* LogViewModel.swift */,
 				44DFAE642C155B85006CCE5C /* LogTableViewController.swift */,
 				4473558F2C14E76000B6C5A7 /* InspectorView.swift */,
+				442463C62C16998B002951DD /* CertificateConfigurationView.swift */,
 				447355912C14ED1700B6C5A7 /* NetworkInfoView.swift */,
 				44DFAE622C153A96006CCE5C /* MockingLogService.swift */,
 				442463BE2C159BA1002951DD /* SetupInstructionsView.swift */,
 				442463C02C15A57D002951DD /* NetworkInformation.swift */,
+				44DB7EF82C182F3200407B2B /* NetworkInterface.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -237,7 +241,6 @@
 				44EDF1F32C130DDC007D7C35 /* OpenSSLInstaller.swift */,
 				44EDF1F72C131344007D7C35 /* MockOpenSSLInstaller.swift */,
 				44EDF1F92C131360007D7C35 /* MockCertificateService.swift */,
-				442463C62C16998B002951DD /* CertificateConfigurationView.swift */,
 				445A3C8D2C126616008E68AE /* ConfigurationService.swift */,
 				445A3C8F2C126646008E68AE /* LoggingService.swift */,
 				445A3C932C126C3D008E68AE /* NetworkingService.swift */,
@@ -467,6 +470,7 @@
 				445A3C632C12647D008E68AE /* JoeProxyApp.swift in Sources */,
 				442463CD2C16BA5A002951DD /* NIOConverter.swift in Sources */,
 				44AA3C712C13C72C00A8F465 /* SSLHandler.swift in Sources */,
+				44DB7EF92C182F3200407B2B /* NetworkInterface.swift in Sources */,
 				44F0A2782C12B8B400FC8160 /* CertificateService.swift in Sources */,
 				44EDF1F82C131344007D7C35 /* MockOpenSSLInstaller.swift in Sources */,
 				442463C52C1638D8002951DD /* NetworkMonitor.swift in Sources */,

@@ -3,7 +3,7 @@ import SwiftUI
 
 extension JoeProxyApp {
     func openInstructionsWindow() {
-        let instructionView = SetupInstructionsView(certificateService: certificateService)
+        let instructionView = SetupInstructionView(networkingViewModel: networkingViewModel)
         let hostingController = NSHostingController(rootView: instructionView)
         let window = NSWindow(contentViewController: hostingController)
         window.setContentSize(NSSize(width: 600, height: 400))

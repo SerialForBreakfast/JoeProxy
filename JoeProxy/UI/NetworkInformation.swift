@@ -4,7 +4,7 @@ import Foundation
 class NetworkInformation: ObservableObject {
     static let shared = NetworkInformation()
     
-    @Published var networkInfo: [(interface: String, ipAddress: String)] = []
+    @Published var networkInfo: [NetworkInterface] = []
     
     private let monitor = NWPathMonitor()
     private let queue = DispatchQueue.global(qos: .background)
@@ -20,7 +20,7 @@ class NetworkInformation: ObservableObject {
             DispatchQueue.main.async {
                 self.networkInfo = interfaces.compactMap { interface in
                     let ipAddress = self.getIPAddress(for: interface)
-                    return (interface: interface.name ?? "Unknown", ipAddress: ipAddress ?? "N/A")
+                    return NetworkInterface(interface: interface.name, ipAddress: ipAddress ?? "N/A")
                 }
             }
         }
