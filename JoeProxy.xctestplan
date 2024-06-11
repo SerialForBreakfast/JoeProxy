@@ -17,6 +17,7 @@
   },
   "testTargets" : [
     {
+      "parallelizable" : true,
       "skippedTests" : [
         "JoeProxyTests"
       ],

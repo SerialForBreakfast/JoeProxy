@@ -133,6 +133,48 @@ final class SSLProxyTests: XCTestCase {
             XCTFail("Failed to stop server: \(error)")
         }
     }
+    
+    func testHTTPProxy() throws {
+        let startResult: Result<Void, Error> = try startServerSync()
+        switch startResult {
+        case .success:
+            print("Server started successfully")
+        case .failure(let error):
+            XCTFail("Failed to start server: \(error)")
+            return
+        }
+
+        guard let port: Int = networkingService.serverPort else {
+            XCTFail("Failed to get the server port")
+            return
+        }
+
+        let url = URL(string: "http://showblender.com/")!
+        let semaphore = DispatchSemaphore(value: 0)
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 10
+        
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            XCTAssertNil(error, "Error should be nil")
+            if let response = response as? HTTPURLResponse {
+                XCTAssertEqual(response.statusCode, 200, "Response status code should be 200")
+            } else {
+                XCTFail("Invalid response")
+            }
+            semaphore.signal()
+        }
+        
+        task.resume()
+        _ = semaphore.wait(timeout: .now() + 10)
+        
+        let stopResult: Result<Void, Error> = try stopServerSync()
+        switch stopResult {
+        case .success:
+            print("Server stopped successfully")
+        case .failure(let error):
+            XCTFail("Failed to stop server: \(error)")
+        }
+    }
 
     func startServerSync() throws -> Result<Void, Error> {
         let semaphore: DispatchSemaphore = DispatchSemaphore(value: 0)

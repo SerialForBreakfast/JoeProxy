@@ -137,6 +137,7 @@
 		44C9101C2C16F24F003AEFCB /* NIOTypeConverterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NIOTypeConverterTests.swift; sourceTree = "<group>"; };
 		44C9101E2C16FB00003AEFCB /* JoeProxyApp+WindowLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JoeProxyApp+WindowLogic.swift"; sourceTree = "<group>"; };
 		44DB7EF52C17BBC300407B2B /* NIOAny+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NIOAny+Extensions.swift"; sourceTree = "<group>"; };
+		44DB7EF72C17F86500407B2B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		44DFAE622C153A96006CCE5C /* MockingLogService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockingLogService.swift; sourceTree = "<group>"; };
 		44DFAE642C155B85006CCE5C /* LogTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogTableViewController.swift; sourceTree = "<group>"; };
 		44EDF1F32C130DDC007D7C35 /* OpenSSLInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenSSLInstaller.swift; sourceTree = "<group>"; };
@@ -265,6 +266,7 @@
 		445A3C732C12647F008E68AE /* JoeProxyTests */ = {
 			isa = PBXGroup;
 			children = (
+				44DB7EF72C17F86500407B2B /* Info.plist */,
 				445A3C742C12647F008E68AE /* JoeProxyTests.swift */,
 				442463B62C158113002951DD /* ClientConnectionTests.swift */,
 				44C910182C16DDB9003AEFCB /* IODataTests.swift */,
@@ -723,6 +725,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = C52PFKSQPU;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = JoeProxyTests/Info.plist;
 				MACOSX_DEPLOYMENT_TARGET = 14.5;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ShowBlender.JoeProxyTests;
@@ -742,6 +745,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = C52PFKSQPU;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = JoeProxyTests/Info.plist;
 				MACOSX_DEPLOYMENT_TARGET = 14.5;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ShowBlender.JoeProxyTests;
