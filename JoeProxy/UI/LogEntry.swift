@@ -10,6 +10,8 @@ import Foundation
 struct LogEntry: Identifiable, Equatable {
     let id = UUID()
     let timestamp: Date
+    let host: String
+    let path: String
     let request: String
     let headers: String
     let response: String

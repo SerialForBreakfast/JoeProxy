@@ -36,6 +36,13 @@ class DependencyInitializer {
     }
 }
 
+
+
+enum UIPrototype {
+    case old
+    case prototypeA
+}
+
 @main
 struct JoeProxyApp: App {
     init() {
@@ -46,6 +53,7 @@ struct JoeProxyApp: App {
     @StateObject private var viewModel: LogViewModel
     @StateObject private var networkingViewModel: NetworkingServiceViewModel
     @State private var showSetupInstructions = false
+    @State private var selectedUI: UIPrototype = .prototypeA  // Default to new prototype
 
     init(initializer: DependencyInitializer = DependencyInitializer()) {
         _certificateService = StateObject(wrappedValue: initializer.certificateService)
@@ -55,11 +63,19 @@ struct JoeProxyApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView(
-                viewModel: viewModel,
-                certificateService: certificateService,
-                networkingViewModel: networkingViewModel
-            )
+            switch selectedUI {
+            case .old:
+                ContentView(
+                    viewModel: viewModel,
+                    certificateService: certificateService,
+                    networkingViewModel: networkingViewModel
+                )
+            case .prototypeA:
+                PrototypeAView(
+                    viewModel: viewModel,
+                    networkingViewModel: networkingViewModel
+                )
+            }
         }
         .commands {
             CommandGroup(replacing: .help) {

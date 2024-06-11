@@ -13,6 +13,12 @@ final class HTTPServerPipelineHandler: ChannelInboundHandler {
         self.loggingService = loggingService
     }
 
+    func channelActive(context: ChannelHandlerContext) {
+        let remoteAddress: String = context.remoteAddress?.description ?? "unknown address"
+        loggingService.log("Connection attempted from \(remoteAddress)", level: .info)
+        print("Connection attempted from \(remoteAddress)")
+    }
+
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         let requestPart: HTTPServerRequestPart = self.unwrapInboundIn(data)
         print("channelRead - requestPart: \(requestPart), type: \(type(of: requestPart))")
