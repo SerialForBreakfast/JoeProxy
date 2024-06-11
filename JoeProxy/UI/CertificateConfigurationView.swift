@@ -1,24 +1,16 @@
-//
-//  CertificateConfigurationView.swift
-//  JoeProxy
-//
-//  Created by Joseph McCraw on 6/9/24.
-//
-
-import Foundation
 import SwiftUI
 
 struct CertificateConfigurationView: View {
     @ObservedObject var certificateService: CertificateService
-    @State private var commonName = ""
-    @State private var organization = ""
-    @State private var organizationalUnit = ""
-    @State private var country = ""
-    @State private var state = ""
-    @State private var locality = ""
+    @State private var commonName = "Test"
+    @State private var organization = "TestOrg"
+    @State private var organizationalUnit = "TestUnit"
+    @State private var country = "US"
+    @State private var state = "TestState"
+    @State private var locality = "TestLocality"
 
     var body: some View {
-        VStack {
+        VStack(alignment: .leading) {
             if certificateService.certificateExists {
                 Text("Certificate exists, created on \(certificateService.certificateCreationDate ?? Date())")
                 Button("Open Certificate Directory") {
@@ -28,32 +20,30 @@ struct CertificateConfigurationView: View {
                 Text("No certificate found")
             }
 
+            TextField("Common Name", text: $commonName)
+            TextField("Organization", text: $organization)
+            TextField("Organizational Unit", text: $organizationalUnit)
+            TextField("Country", text: $country)
+            TextField("State", text: $state)
+            TextField("Locality", text: $locality)
+
             Button("Generate Certificate") {
-                do {
-                    try certificateService.generateCertificate {
-                        print("Generated certificate certificateExists:  \(certificateService.certificateExists)")
-                    }
-                } catch {
-                    print("Failed to generate certificate: \(error)")
+                certificateService.generateCertificate(
+                    commonName: commonName,
+                    organization: organization,
+                    organizationalUnit: organizationalUnit,
+                    country: country,
+                    state: state,
+                    locality: locality
+                ) {
+                    print("Generated certificate certificateExists:  \(certificateService.certificateExists)")
                 }
             }
             .padding()
         }
+        .padding()
         .onAppear {
             certificateService.checkCertificateExists()
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding()
-        .background(ScrollView {
-            VStack {
-                // Content goes here
-            }
-        })
-    }
-}
-
-struct CertificateConfigurationView_Previews: PreviewProvider {
-    static var previews: some View {
-        CertificateConfigurationView(certificateService: CertificateService())
     }
 }

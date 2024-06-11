@@ -36,7 +36,6 @@ struct LogView: View {
                 .removeDuplicates()
                 .sink { newFilterText in
                     print("Filtering logs with: \(newFilterText)")
-                    viewModel.filterLogs(with: newFilterText)
                 }
                 .store(in: &cancellables)
 
@@ -50,13 +49,5 @@ struct LogView: View {
                 }
                 .store(in: &cancellables)
         }
-    }
-}
-
-struct LogView_Previews: PreviewProvider {
-    @State static var selectedLogEntry: LogEntry? = nil
-
-    static var previews: some View {
-        LogView(viewModel: LogViewModel(loggingService: MockLoggingService()), selectedLogEntry: $selectedLogEntry)
     }
 }
