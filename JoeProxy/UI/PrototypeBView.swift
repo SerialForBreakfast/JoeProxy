@@ -15,27 +15,30 @@ struct PrototypeBView: View {
     @State private var selectedLogEntry: LogEntry?
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                LogView(viewModel: logViewModel, selectedLogEntry: $selectedLogEntry)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .border(Color.gray)
+        GeometryReader { geometry in
+            VStack {
+                HStack(spacing: 0) {
+                    LogView(viewModel: logViewModel, selectedLogEntry: $selectedLogEntry)
+                        .frame(width: geometry.size.width / 2, height: geometry.size.height / 2)
+                        .border(Color.gray)
 
-                InspectorView(logEntry: selectedLogEntry ?? LogEntry.default)
-                    .frame(maxWidth: .infinity, minHeight: 200)
-                    .border(Color.gray)
+                    InspectorView(logEntry: selectedLogEntry ?? LogEntry.default)
+                        .frame(width: geometry.size.width / 2, height: geometry.size.height / 2)
+                        .border(Color.gray)
+                }
 
-                CertificateConfigurationView(certificateService: certificateService)
-                    .frame(maxWidth: .infinity, minHeight: 200)
-                    .border(Color.gray)
+                HStack(spacing: 0) {
+                    CertificateConfigurationView(certificateService: certificateService)
+                        .frame(width: geometry.size.width / 2, height: geometry.size.height / 2)
+                        .border(Color.gray)
 
-                SetupInstructionView(networkingViewModel: networkingViewModel)
-                    .frame(maxWidth: .infinity, minHeight: 200)
-                    .border(Color.gray)
+                    SetupInstructionView(networkingViewModel: networkingViewModel)
+                        .frame(width: geometry.size.width / 2, height: geometry.size.height / 2)
+                        .border(Color.gray)
+                }
             }
-            .padding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
