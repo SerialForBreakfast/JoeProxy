@@ -60,6 +60,11 @@ class LogTableViewController: NSViewController, NSTableViewDelegate, NSTableView
     }
 
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
+        guard row >= 0 && row < logs.count else {
+            print("Attempted to load LogTableViewController with row \(row)")
+            return nil
+        }
+
         let log = logs[row]
         let identifier = tableColumn?.identifier.rawValue
 
@@ -91,15 +96,17 @@ class LogTableViewController: NSViewController, NSTableViewDelegate, NSTableView
 
     func tableViewSelectionDidChange(_ notification: Notification) {
         let selectedRow = tableView.selectedRow
-        if selectedRow >= 0 {
+        if selectedRow >= 0 && selectedRow < logs.count {
             let selectedLog = logs[selectedRow]
             onSelectLog?(selectedLog)
         }
     }
 
     func updateLogs(_ newLogs: [LogEntry]) {
-        self.logs = newLogs
-        self.tableView.reloadData()
+        DispatchQueue.main.async {
+            self.logs = newLogs
+            self.tableView.reloadData()
+        }
     }
 }
 
@@ -131,7 +138,7 @@ struct PrototypeAView: View {
                 TextField("Filter logs...", text: $filterText)
                     .padding()
                     .onChange(of: filterText) { newValue in
-                        viewModel.filterLogs(with: newValue)
+                        viewModel.updateFilteredLogs(with: newValue)
                     }
                 Button(isPaused ? "Resume" : "Pause") {
                     isPaused.toggle()

@@ -7,10 +7,10 @@ struct LogView: View {
     @State private var isPaused = false
     @Binding var selectedLogEntry: LogEntry?
     @State private var filterText: String = ""
-    @State private var cancellable: AnyCancellable?
-    
+    @State private var cancellables = Set<AnyCancellable>()
+
     private let filterSubject = PassthroughSubject<String, Never>()
-    
+
     var body: some View {
         VStack {
             HStack {
@@ -31,27 +31,31 @@ struct LogView: View {
             }
         }
         .onAppear {
-            cancellable = filterSubject
+            filterSubject
                 .debounce(for: .milliseconds(500), scheduler: RunLoop.main)
                 .removeDuplicates()
                 .sink { newFilterText in
-                    viewModel.updateFilteredLogs(with: newFilterText)
+                    print("Filtering logs with: \(newFilterText)")
+                    viewModel.filterLogs(with: newFilterText)
                 }
-            
-            cancellable = viewModel.$logs
+                .store(in: &cancellables)
+
+            viewModel.$logs
                 .dropFirst()
+                .receive(on: RunLoop.main)
                 .sink { logs in
                     if !isPaused {
                         viewModel.updateLogs(with: logs)
                     }
                 }
+                .store(in: &cancellables)
         }
     }
 }
 
 struct LogView_Previews: PreviewProvider {
     @State static var selectedLogEntry: LogEntry? = nil
-    
+
     static var previews: some View {
         LogView(viewModel: LogViewModel(loggingService: MockLoggingService()), selectedLogEntry: $selectedLogEntry)
     }
