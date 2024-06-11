@@ -117,4 +117,3 @@ struct LogTableView: NSViewControllerRepresentable {
         nsViewController.updateLogs(logs)
     }
 }
-

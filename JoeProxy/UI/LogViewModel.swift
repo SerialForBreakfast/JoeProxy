@@ -3,21 +3,22 @@ import Combine
 
 class LogViewModel: ObservableObject {
     @Published var logs: [LogEntry] = []
+    @Published var filteredLogs: [LogEntry] = []
     @Published var selectedLogEntry: LogEntry?
 
     private let loggingService: LoggingService
+    private var cancellables = Set<AnyCancellable>()
 
     init(loggingService: LoggingService) {
         self.loggingService = loggingService
         setupLogsPublisher()
     }
 
-    func filteredLogs(_ filterText: String) -> [LogEntry] {
-        print("filtering logs \(filterText)")
+    func updateFilteredLogs(with filterText: String) {
         if filterText.isEmpty {
-            return logs
+            filteredLogs = logs
         } else {
-            return logs.filter { log in
+            filteredLogs = logs.filter { log in
                 log.request.contains(filterText) ||
                 log.headers.contains(filterText) ||
                 log.response.contains(filterText)
@@ -41,7 +42,11 @@ class LogViewModel: ObservableObject {
                     )
                 }
             }
-            .assign(to: &$logs)
+            .sink { [weak self] logEntries in
+                self?.logs = logEntries
+                self?.updateFilteredLogs(with: "")
+            }
+            .store(in: &cancellables)
     }
 
     func loadLogs() {
@@ -53,6 +58,7 @@ class LogViewModel: ObservableObject {
             LogEntry(timestamp: Date().addingTimeInterval(-180), request: "DELETE /api/data/1", headers: "Host: example.com\nAuthorization: Bearer token", response: "204 No Content", responseBody: "", statusCode: 204),
             LogEntry(timestamp: Date().addingTimeInterval(-240), request: "PUT /api/data/1", headers: "Host: example.com\nContent-Type: application/json", response: "200 OK", responseBody: "{ \"data\": \"example\" }", statusCode: 200)
         ]
+        updateFilteredLogs(with: "")
         print("Logs loaded.")
     }
 
@@ -62,6 +68,7 @@ class LogViewModel: ObservableObject {
 
     func updateLogs(with newLogs: [LogEntry]) {
         logs = newLogs
+        updateFilteredLogs(with: "")
         print("Updating logs")
     }
 }

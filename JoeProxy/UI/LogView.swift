@@ -25,8 +25,7 @@ struct LogView: View {
                 .padding()
             }
             HStack {
-                
-                LogTableView(logs: viewModel.filteredLogs(filterText)) { selectedLog in
+                LogTableView(logs: viewModel.filteredLogs) { selectedLog in
                     selectedLogEntry = selectedLog
                 }
             }
@@ -36,7 +35,7 @@ struct LogView: View {
                 .debounce(for: .milliseconds(500), scheduler: RunLoop.main)
                 .removeDuplicates()
                 .sink { newFilterText in
-                    print("Filtering logs with: \(newFilterText)")
+                    viewModel.updateFilteredLogs(with: newFilterText)
                 }
             
             cancellable = viewModel.$logs
