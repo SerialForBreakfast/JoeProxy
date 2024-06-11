@@ -89,8 +89,53 @@ final class SSLProxyTests: XCTestCase {
         }
     }
 
+    func testSSLProxyWithCurl() throws {
+        // Start the server and check the result synchronously
+        let startResult: Result<Void, Error> = try startServerSync()
+        switch startResult {
+        case .success:
+            print("Server started successfully")
+        case .failure(let error):
+            XCTFail("Failed to start server: \(error)")
+            return
+        }
+        
+        // Get the dynamically assigned port
+        guard let port: Int = networkingService.serverPort else {
+            XCTFail("Failed to get the server port")
+            return
+        }
+        
+        // Execute curl command to test the server response
+        let curlTask: Process = Process()
+        curlTask.executableURL = URL(fileURLWithPath: "/usr/bin/curl")
+        curlTask.arguments = ["-k", "https://localhost:\(port)"]
+        
+        let pipe: Pipe = Pipe()
+        curlTask.standardOutput = pipe
+        curlTask.standardError = pipe
+        
+        try curlTask.run()
+        curlTask.waitUntilExit()
+        
+        let data: Data = pipe.fileHandleForReading.readDataToEndOfFile()
+        let output: String? = String(data: data, encoding: .utf8)
+        
+        XCTAssertEqual(curlTask.terminationStatus, 0, "Curl command failed with exit code \(curlTask.terminationStatus)")
+        XCTAssertTrue(output?.contains("JoeProxy") ?? false, "Curl output did not contain expected content. Output: \(output ?? "")")
+        
+        // Stop the server and check the result synchronously
+        let stopResult: Result<Void, Error> = try stopServerSync()
+        switch stopResult {
+        case .success:
+            print("Server stopped successfully")
+        case .failure(let error):
+            XCTFail("Failed to stop server: \(error)")
+        }
+    }
+
     func startServerSync() throws -> Result<Void, Error> {
-        let semaphore = DispatchSemaphore(value: 0)
+        let semaphore: DispatchSemaphore = DispatchSemaphore(value: 0)
         var result: Result<Void, Error> = .failure(NSError(domain: "Unknown", code: 0, userInfo: nil))
         
         try networkingService.startServer { startResult in
@@ -103,7 +148,7 @@ final class SSLProxyTests: XCTestCase {
     }
 
     func stopServerSync() throws -> Result<Void, Error> {
-        let semaphore = DispatchSemaphore(value: 0)
+        let semaphore: DispatchSemaphore = DispatchSemaphore(value: 0)
         var result: Result<Void, Error> = .failure(NSError(domain: "Unknown", code: 0, userInfo: nil))
         
         networkingService.stopServer { stopResult in
@@ -115,39 +160,3 @@ final class SSLProxyTests: XCTestCase {
         return result
     }
 }
-
-
-
-//    func testSSLProxyWithCurl() throws {
-//        let expectation = XCTestExpectation(description: "Server started")
-//        
-//        try networkingService.startServer { result in
-//            switch result {
-//            case .success:
-//                print("Server started successfully.")
-//                expectation.fulfill()
-//            case .failure(let error):
-//                XCTFail("Failed to start server: \(error)")
-//            }
-//        }
-//        
-//        wait(for: [expectation], timeout: 10.0)
-//        
-//        let curlTask = Process()
-//        curlTask.executableURL = URL(fileURLWithPath: "/usr/bin/curl")
-//        curlTask.arguments = ["-k", "https://localhost:8443"]
-//        
-//        let pipe = Pipe()
-//        curlTask.standardOutput = pipe
-//        curlTask.standardError = pipe
-//        
-//        try curlTask.run()
-//        curlTask.waitUntilExit()
-//        
-//        let data = pipe.fileHandleForReading.readDataToEndOfFile()
-//        let output = String(data: data, encoding: .utf8)
-//        
-//        XCTAssertEqual(curlTask.terminationStatus, 0, "Curl command failed with exit code \(curlTask.terminationStatus)")
-//        XCTAssertTrue(output?.contains("JoeProxy") ?? false, "Curl output did not contain expected content. Output: \(output ?? "")")
-//    }
-//}

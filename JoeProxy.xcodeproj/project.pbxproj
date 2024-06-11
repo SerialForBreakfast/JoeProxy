@@ -54,6 +54,7 @@
 		44C9101B2C16F133003AEFCB /* NIOTypeConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44C9101A2C16F133003AEFCB /* NIOTypeConverter.swift */; };
 		44C9101D2C16F24F003AEFCB /* NIOTypeConverterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44C9101C2C16F24F003AEFCB /* NIOTypeConverterTests.swift */; };
 		44C9101F2C16FB00003AEFCB /* JoeProxyApp+WindowLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44C9101E2C16FB00003AEFCB /* JoeProxyApp+WindowLogic.swift */; };
+		44DB7EF62C17BBC300407B2B /* NIOAny+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44DB7EF52C17BBC300407B2B /* NIOAny+Extensions.swift */; };
 		44DFAE632C153A96006CCE5C /* MockingLogService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44DFAE622C153A96006CCE5C /* MockingLogService.swift */; };
 		44DFAE652C155B85006CCE5C /* LogTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44DFAE642C155B85006CCE5C /* LogTableViewController.swift */; };
 		44EDF1F42C130DDC007D7C35 /* OpenSSLInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44EDF1F32C130DDC007D7C35 /* OpenSSLInstaller.swift */; };
@@ -135,6 +136,7 @@
 		44C9101A2C16F133003AEFCB /* NIOTypeConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NIOTypeConverter.swift; sourceTree = "<group>"; };
 		44C9101C2C16F24F003AEFCB /* NIOTypeConverterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NIOTypeConverterTests.swift; sourceTree = "<group>"; };
 		44C9101E2C16FB00003AEFCB /* JoeProxyApp+WindowLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JoeProxyApp+WindowLogic.swift"; sourceTree = "<group>"; };
+		44DB7EF52C17BBC300407B2B /* NIOAny+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NIOAny+Extensions.swift"; sourceTree = "<group>"; };
 		44DFAE622C153A96006CCE5C /* MockingLogService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockingLogService.swift; sourceTree = "<group>"; };
 		44DFAE642C155B85006CCE5C /* LogTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogTableViewController.swift; sourceTree = "<group>"; };
 		44EDF1F32C130DDC007D7C35 /* OpenSSLInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenSSLInstaller.swift; sourceTree = "<group>"; };
@@ -238,6 +240,7 @@
 				445A3C8F2C126646008E68AE /* LoggingService.swift */,
 				445A3C932C126C3D008E68AE /* NetworkingService.swift */,
 				442463CA2C16B93E002951DD /* HTTPServerPipelineHandler.swift */,
+				44DB7EF52C17BBC300407B2B /* NIOAny+Extensions.swift */,
 				442463CC2C16BA5A002951DD /* NIOConverter.swift */,
 				44C9101A2C16F133003AEFCB /* NIOTypeConverter.swift */,
 				4402B64F2C128BBC00761AC5 /* SimpleHandler.swift */,
@@ -449,6 +452,7 @@
 				44DFAE652C155B85006CCE5C /* LogTableViewController.swift in Sources */,
 				447355902C14E76000B6C5A7 /* InspectorView.swift in Sources */,
 				445A3C942C126C3D008E68AE /* NetworkingService.swift in Sources */,
+				44DB7EF62C17BBC300407B2B /* NIOAny+Extensions.swift in Sources */,
 				445A3C652C12647D008E68AE /* ContentView.swift in Sources */,
 				447355962C14FE3300B6C5A7 /* LogEntry.swift in Sources */,
 				445A3C8E2C126616008E68AE /* ConfigurationService.swift in Sources */,
