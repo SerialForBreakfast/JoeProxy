@@ -41,6 +41,7 @@ class DependencyInitializer {
 enum UIPrototype {
     case old
     case prototypeA
+    case prototypeB
 }
 
 @main
@@ -53,19 +54,18 @@ struct JoeProxyApp: App {
     @StateObject private var viewModel: LogViewModel
     @StateObject var networkingViewModel: NetworkingServiceViewModel
     @State private var showSetupInstructions = false
-    @State private var showInspectorView = false
-    @State private var showCertificateConfiguration = false
-    @State private var selectedUI: UIPrototype = .prototypeA  // Default to new prototype
-
+    @State private var selectedLogEntry: LogEntry?
+    @State private var currentPrototype: UIPrototype = .prototypeB
+    
     init(initializer: DependencyInitializer = DependencyInitializer()) {
         _certificateService = StateObject(wrappedValue: initializer.certificateService)
         _viewModel = StateObject(wrappedValue: initializer.viewModel)
         _networkingViewModel = StateObject(wrappedValue: initializer.networkingViewModel)
     }
-
+    
     var body: some Scene {
         WindowGroup {
-            switch selectedUI {
+            switch currentPrototype {
             case .old:
                 ContentView(
                     viewModel: viewModel,
@@ -77,60 +77,31 @@ struct JoeProxyApp: App {
                     viewModel: viewModel,
                     networkingViewModel: networkingViewModel
                 )
-                .onAppear {
-                    showSetupInstructions = true
-                    showInspectorView = true
-                    showCertificateConfiguration = true
-                }
+            case .prototypeB:
+                PrototypeBView(
+                    logViewModel: viewModel,
+                    certificateService: certificateService,
+                    networkingViewModel: networkingViewModel
+                )
             }
         }
-        .commands {
-            CommandGroup(replacing: .help) {
-                Button("Setup Instructions") {
-                    showSetupInstructions = true
-                }
-                .keyboardShortcut("I", modifiers: [.command, .option])
-            }
-            CommandGroup(replacing: .newItem) {
-                Button("Open Inspector View") {
-                    showInspectorView = true
-                }
-                .keyboardShortcut("I", modifiers: [.command])
-                Button("Open Certificate Configuration") {
-                    showCertificateConfiguration = true
-                }
-                .keyboardShortcut("C", modifiers: [.command])
-            }
-        }
-//
-//        if showSetupInstructions {
-            WindowGroup("Setup Instructions") {
-                SetupInstructionView(networkingViewModel: networkingViewModel)
-                    .frame(minWidth: 600, minHeight: 400)
-                    .onDisappear {
-                        showSetupInstructions = false
-                    }
-            }
-//        }
-//
-//        if showInspectorView {
-        WindowGroup("Inspector View") {
-            InspectorView(logEntry: viewModel.selectedLogEntry ?? LogEntry(timestamp: Date().addingTimeInterval(-180), host: "api.example.com", path: "/api/data/1", request: "DELETE /api/data/1", headers: "Host: api.example.com\nAuthorization: Bearer token", response: "204 No Content", responseBody: "", statusCode: 204))
+        
+        WindowGroup("Inspector") {
+            InspectorView(logEntry: selectedLogEntry ?? LogEntry.default)
                 .frame(minWidth: 600, minHeight: 400)
-                .onDisappear {
-                    showInspectorView = false
-                }
         }
-//        }
-//
-//        if showCertificateConfiguration {
-            WindowGroup("Certificate Configuration") {
-                CertificateConfigurationView(certificateService: certificateService)
-                    .frame(minWidth: 600, minHeight: 400)
-                    .onDisappear {
-                        showCertificateConfiguration = false
-                    }
-            }
-//        }
+        .handlesExternalEvents(matching: Set(arrayLiteral: "*"))
+        
+        WindowGroup("Certificate Configuration") {
+            CertificateConfigurationView(certificateService: certificateService)
+                .frame(minWidth: 600, minHeight: 400)
+        }
+        .handlesExternalEvents(matching: Set(arrayLiteral: "*"))
+        
+        WindowGroup("Setup Instructions") {
+            SetupInstructionView(networkingViewModel: networkingViewModel)
+                .frame(minWidth: 600, minHeight: 400)
+        }
+        .handlesExternalEvents(matching: Set(arrayLiteral: "*"))
     }
 }

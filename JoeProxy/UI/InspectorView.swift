@@ -1,21 +1,21 @@
 import SwiftUI
 
 struct InspectorView: View {
-    let logEntry: LogEntry
+    let logEntry: LogEntry?
 
     var body: some View {
         VStack(alignment: .leading) {
-            Text("Request: \(logEntry.request)")
+            Text("Request: \(logEntry?.request ?? "N/A")")
                 .font(.headline)
-            Text("Headers: \(logEntry.headers)")
+            Text("Headers: \(logEntry?.headers ?? "N/A")")
                 .font(.subheadline)
-            Text("Response: \(logEntry.response)")
+            Text("Response: \(logEntry?.response ?? "N/A")")
                 .font(.subheadline)
-            Text("Status Code: \(logEntry.statusCode)")
+            Text("Status Code: \(logEntry?.statusCodeString ?? "N/A")")
                 .font(.subheadline)
-            Text("Timestamp: \(logEntry.timestamp, formatter: DateFormatter())")
+            Text("Timestamp: \(logEntry?.timestampString ?? "N/A")")
                 .font(.subheadline)
-            Text("Response Body: \(prettifyJSON(logEntry.responseBody))")
+            Text("Response Body: \(prettifyJSON(logEntry?.responseBody ?? "N/A"))")
                 .font(.body)
             Spacer()
         }

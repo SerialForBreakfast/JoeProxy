@@ -26,6 +26,8 @@
 		442463CB2C16B93F002951DD /* HTTPServerPipelineHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 442463CA2C16B93E002951DD /* HTTPServerPipelineHandler.swift */; };
 		442463CD2C16BA5A002951DD /* NIOConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 442463CC2C16BA5A002951DD /* NIOConverter.swift */; };
 		442463CF2C16C7CB002951DD /* NIOConverterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 442463CE2C16C7CB002951DD /* NIOConverterTests.swift */; };
+		443BDA2D2C1909EC006C3039 /* PrototypeA.swift in Sources */ = {isa = PBXBuildFile; fileRef = 443BDA2C2C1909EC006C3039 /* PrototypeA.swift */; };
+		443BDA2F2C190AC3006C3039 /* PrototypeBView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 443BDA2E2C190AC3006C3039 /* PrototypeBView.swift */; };
 		445A3C632C12647D008E68AE /* JoeProxyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 445A3C622C12647D008E68AE /* JoeProxyApp.swift */; };
 		445A3C652C12647D008E68AE /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 445A3C642C12647D008E68AE /* ContentView.swift */; };
 		445A3C672C12647F008E68AE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 445A3C662C12647F008E68AE /* Assets.xcassets */; };
@@ -104,6 +106,8 @@
 		442463CA2C16B93E002951DD /* HTTPServerPipelineHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPServerPipelineHandler.swift; sourceTree = "<group>"; };
 		442463CC2C16BA5A002951DD /* NIOConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NIOConverter.swift; sourceTree = "<group>"; };
 		442463CE2C16C7CB002951DD /* NIOConverterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NIOConverterTests.swift; sourceTree = "<group>"; };
+		443BDA2C2C1909EC006C3039 /* PrototypeA.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrototypeA.swift; sourceTree = "<group>"; };
+		443BDA2E2C190AC3006C3039 /* PrototypeBView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrototypeBView.swift; sourceTree = "<group>"; };
 		445A3C5F2C12647D008E68AE /* JoeProxy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = JoeProxy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		445A3C622C12647D008E68AE /* JoeProxyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoeProxyApp.swift; sourceTree = "<group>"; };
 		445A3C642C12647D008E68AE /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -189,6 +193,8 @@
 				4402B6522C128F0100761AC5 /* LogView.swift */,
 				447355972C14FE5F00B6C5A7 /* LogViewModel.swift */,
 				44DFAE642C155B85006CCE5C /* LogTableViewController.swift */,
+				443BDA2C2C1909EC006C3039 /* PrototypeA.swift */,
+				443BDA2E2C190AC3006C3039 /* PrototypeBView.swift */,
 				4473558F2C14E76000B6C5A7 /* InspectorView.swift */,
 				442463C62C16998B002951DD /* CertificateConfigurationView.swift */,
 				447355912C14ED1700B6C5A7 /* NetworkInfoView.swift */,
@@ -480,6 +486,8 @@
 				442463CB2C16B93F002951DD /* HTTPServerPipelineHandler.swift in Sources */,
 				447355942C14EE7100B6C5A7 /* NetworkingServiceViewModel.swift in Sources */,
 				447355922C14ED1700B6C5A7 /* NetworkInfoView.swift in Sources */,
+				443BDA2F2C190AC3006C3039 /* PrototypeBView.swift in Sources */,
+				443BDA2D2C1909EC006C3039 /* PrototypeA.swift in Sources */,
 				442463C32C15A6FA002951DD /* Enums.swift in Sources */,
 				44EDF1F42C130DDC007D7C35 /* OpenSSLInstaller.swift in Sources */,
 				4402B6502C128BBC00761AC5 /* SimpleHandler.swift in Sources */,
