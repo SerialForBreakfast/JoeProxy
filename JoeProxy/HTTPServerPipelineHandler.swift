@@ -28,6 +28,8 @@ final class HTTPServerPipelineHandler: ChannelInboundHandler {
             context.write(self.wrapOutboundOut(.head(responseHead)), promise: nil)
             context.write(self.wrapOutboundOut(.body(.byteBuffer(responseBody))), promise: nil)
             context.writeAndFlush(self.wrapOutboundOut(.end(nil)), promise: nil)
+        default:
+            print("Received unknown part: \(requestPart), type: \(type(of: requestPart))")
         }
     }
 

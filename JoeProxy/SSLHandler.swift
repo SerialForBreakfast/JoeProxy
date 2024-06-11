@@ -92,10 +92,13 @@ final class SSLHandler: ChannelInboundHandler {
     private func sendResponse(context: ChannelHandlerContext, status: HTTPResponseStatus, body: String) {
         var buffer = context.channel.allocator.buffer(capacity: body.utf8.count)
         buffer.writeString(body)
-
         let responseHead = HTTPResponseHead(version: .http1_1, status: status)
-        context.write(self.wrapOutboundOut(.head(responseHead)), promise: nil)
-        context.write(self.wrapOutboundOut(.body(.byteBuffer(buffer))), promise: nil)
+        sendHTTPResponse(context: context, head: responseHead, body: buffer)
+    }
+
+    private func sendHTTPResponse(context: ChannelHandlerContext, head: HTTPResponseHead, body: ByteBuffer) {
+        context.write(self.wrapOutboundOut(.head(head)), promise: nil)
+        context.write(self.wrapOutboundOut(.body(.byteBuffer(body))), promise: nil)
         context.writeAndFlush(self.wrapOutboundOut(.end(nil))).whenComplete { _ in
             context.close(promise: nil)
         }
