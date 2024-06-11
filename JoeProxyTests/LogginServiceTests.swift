@@ -1,10 +1,3 @@
-//
-//  LogginServiceTests.swift
-//  JoeProxyTests
-//
-//  Created by Joseph McCraw on 6/6/24.
-//
-
 import XCTest
 import Combine
 @testable import JoeProxy
@@ -24,7 +17,7 @@ class LoggingServiceTests: XCTestCase {
     }
     
     func testLogRequest() throws {
-        let headers = ["Content-Type": "application/json", "Accept": "*/*"]
+        let headers: [String: String] = ["Content-Type": "application/json", "Accept": "*/*"]
         loggingService.logRequest("https://example.com/api", headers: headers, timestamp: Date())
         
         XCTAssertTrue(loggingService.logs.last?.contains("[REQUEST]") ?? false)
@@ -43,7 +36,7 @@ class LoggingServiceTests: XCTestCase {
     }
 
     func testLogsPublisher() throws {
-        let expectation = XCTestExpectation(description: "Logs Publisher")
+        let expectation: XCTestExpectation = XCTestExpectation(description: "Logs Publisher")
         var cancellable: AnyCancellable?
         
         cancellable = loggingService.logsPublisher
@@ -78,18 +71,18 @@ class MockLoggingService: LoggingService {
     }
     
     func logRequest(_ request: String, headers: [String: String], timestamp: Date) {
-        let formattedHeaders = headers.map { "\($0.key): \($0.value)" }.joined(separator: ", ")
-        let logMessage = "[REQUEST] \(timestamp) \(request) Headers: \(formattedHeaders)"
+        let formattedHeaders: String = headers.map { "\($0.key): \($0.value)" }.joined(separator: ", ")
+        let logMessage: String = "[REQUEST] \(timestamp) \(request) Headers: \(formattedHeaders)"
         log(logMessage, level: .info)
     }
     
     func logResponse(_ response: String, statusCode: Int, timestamp: Date) {
-        let logMessage = "[RESPONSE] \(timestamp) \(response) Status: \(statusCode)"
+        let logMessage: String = "[RESPONSE] \(timestamp) \(response) Status: \(statusCode)"
         log(logMessage, level: .info)
     }
     
     func log(_ message: String, level: LogLevel) {
-        let logMessage = "[\(level.rawValue.uppercased())] \(message)"
+        let logMessage: String = "[\(level.rawValue.uppercased())] \(message)"
         loggedMessagesInternal.append(logMessage)
         logsSubject.send(loggedMessagesInternal)
     }

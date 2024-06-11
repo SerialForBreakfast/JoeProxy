@@ -7,29 +7,62 @@ final class HTTPServerPipelineHandler: ChannelInboundHandler {
     typealias OutboundIn = HTTPServerResponsePart
     typealias OutboundOut = HTTPServerResponsePart
 
+    private let loggingService: LoggingService
+
+    init(loggingService: LoggingService) {
+        self.loggingService = loggingService
+    }
+
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
-        // Use unwrapInboundIn to convert NIOAny to HTTPServerRequestPart
-        let requestPart = self.unwrapInboundIn(data)
+        let requestPart: HTTPServerRequestPart = self.unwrapInboundIn(data)
         print("channelRead - requestPart: \(requestPart), type: \(type(of: requestPart))")
 
         switch requestPart {
         case .head(let request):
-            print("Received request head: \(request), type: \(type(of: request))")
+            self.logRequestHead(request)
         case .body(let buffer):
-            let bodyContent: String? = buffer.getString(at: 0, length: buffer.readableBytes)
-            print("Received request body: \(bodyContent ?? ""), type: \(type(of: buffer))")
+            self.logRequestBody(buffer)
         case .end:
-            let responseHead = HTTPResponseHead(version: .http1_1, status: .ok)
-            print("Creating response head: \(responseHead), type: \(type(of: responseHead))")
-
-            let responseBody = context.channel.allocator.buffer(string: "JoeProxy")
-            print("Creating response body: \(responseBody.getString(at: 0, length: responseBody.readableBytes) ?? ""), type: \(type(of: responseBody))")
-
-            context.write(self.wrapOutboundOut(.head(responseHead)), promise: nil)
-            context.write(self.wrapOutboundOut(.body(.byteBuffer(responseBody))), promise: nil)
-            context.writeAndFlush(self.wrapOutboundOut(.end(nil)), promise: nil)
+            self.sendResponse(context: context)
         default:
             print("Received unknown part: \(requestPart), type: \(type(of: requestPart))")
+        }
+    }
+
+    private func logRequestHead(_ request: HTTPRequestHead) {
+        let method: HTTPMethod = request.method
+        let uri: String = request.uri
+        let headers: HTTPHeaders = request.headers
+
+        self.loggingService.log("Received request head: \(method) \(uri), headers: \(headers)", level: .info)
+        print("logRequestHead - method: \(method), uri: \(uri), headers: \(headers)")
+    }
+
+    private func logRequestBody(_ buffer: ByteBuffer) {
+        let body: String? = buffer.getString(at: 0, length: buffer.readableBytes)
+        if let body: String = body {
+            self.loggingService.log("Received request body: \(body)", level: .info)
+            print("logRequestBody - body: \(body)")
+        }
+    }
+
+    private func sendResponse(context: ChannelHandlerContext) {
+        let responseHead: HTTPResponseHead = HTTPResponseHead(version: .http1_1, status: .ok)
+        let responseBody: ByteBuffer = context.channel.allocator.buffer(string: "JoeProxy")
+
+        self.logResponse(responseHead: responseHead, body: responseBody)
+
+        context.write(self.wrapOutboundOut(.head(responseHead)), promise: nil)
+        context.write(self.wrapOutboundOut(.body(.byteBuffer(responseBody))), promise: nil)
+        context.writeAndFlush(self.wrapOutboundOut(.end(nil)), promise: nil)
+    }
+
+    private func logResponse(responseHead: HTTPResponseHead, body: ByteBuffer) {
+        let responseBody: String? = body.getString(at: 0, length: body.readableBytes)
+        if let responseBody: String = responseBody {
+            self.loggingService.log("Sending response head: \(responseHead.status), headers: \(responseHead.headers)", level: .info)
+            self.loggingService.log("Sending response body: \(responseBody)", level: .info)
+            print("logResponse - status: \(responseHead.status), headers: \(responseHead.headers), body: \(responseBody)")
         }
     }
 
@@ -39,15 +72,17 @@ final class HTTPServerPipelineHandler: ChannelInboundHandler {
     }
 
     func errorCaught(context: ChannelHandlerContext, error: Error) {
+        self.loggingService.log("Error: \(error)", level: .error)
         print("errorCaught - error: \(error), type: \(type(of: error))")
         context.close(promise: nil)
     }
+}
 
-    // Static methods for centralized conversion
+extension HTTPServerPipelineHandler {
     static func toHTTPServerRequestPart(buffer: ByteBuffer) -> HTTPServerRequestPart? {
-        var tempBuffer = buffer
-        let embeddedChannel = EmbeddedChannel()
-        let decoder = ByteToMessageHandler(HTTPRequestDecoder())
+        var tempBuffer: ByteBuffer = buffer
+        let embeddedChannel: EmbeddedChannel = EmbeddedChannel()
+        let decoder: ByteToMessageHandler<HTTPRequestDecoder> = ByteToMessageHandler(HTTPRequestDecoder())
 
         do {
             try embeddedChannel.pipeline.addHandler(decoder).wait()
@@ -60,21 +95,8 @@ final class HTTPServerPipelineHandler: ChannelInboundHandler {
     }
 
     static func toHTTPServerResponsePart(buffer: ByteBuffer) -> HTTPServerResponsePart {
-        let responseHead = HTTPResponseHead(version: .http1_1, status: .ok)
+        let responseHead: HTTPResponseHead = HTTPResponseHead(version: .http1_1, status: .ok)
         let ioData: IOData = .byteBuffer(buffer)
         return HTTPServerResponsePart.body(ioData)
-    }
-
-    static func toIOData(buffer: ByteBuffer) -> IOData {
-        return .byteBuffer(buffer)
-    }
-
-    static func toByteBuffer(ioData: IOData, allocator: ByteBufferAllocator, fileIO: NonBlockingFileIO, eventLoop: EventLoop) -> EventLoopFuture<ByteBuffer?> {
-        switch ioData {
-        case .byteBuffer(let buffer):
-            return eventLoop.makeSucceededFuture(buffer)
-        case .fileRegion(let fileRegion):
-            return fileIO.read(fileRegion: fileRegion, allocator: allocator, eventLoop: eventLoop).map { $0 }
-        }
     }
 }

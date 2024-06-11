@@ -39,16 +39,16 @@ class DefaultNetworkingService: NetworkingService {
             return
         }
         
-        let certificateURL = certificateService.certificateURL
-        let pemURL = certificateService.pemURL
+        let certificateURL: URL = certificateService.certificateURL
+        let pemURL: URL = certificateService.pemURL
         print("Certificate path: \(certificateURL)")
         print("PEM path: \(pemURL)")
         
         let sslContext: NIOSSLContext
         do {
-            let certChain = try NIOSSLCertificate.fromPEMFile(certificateURL.path)
-            let key = try NIOSSLPrivateKey(file: pemURL.path, format: .pem)
-            let tlsConfig = TLSConfiguration.makeServerConfiguration(certificateChain: certChain.map { .certificate($0) }, privateKey: .privateKey(key))
+            let certChain: [NIOSSLCertificate] = try NIOSSLCertificate.fromPEMFile(certificateURL.path)
+            let key: NIOSSLPrivateKey = try NIOSSLPrivateKey(file: pemURL.path, format: .pem)
+            let tlsConfig: TLSConfiguration = TLSConfiguration.makeServerConfiguration(certificateChain: certChain.map { .certificate($0) }, privateKey: .privateKey(key))
             sslContext = try NIOSSLContext(configuration: tlsConfig)
             print("SSL context created successfully.")
         } catch {
@@ -59,15 +59,16 @@ class DefaultNetworkingService: NetworkingService {
         
         group = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
         
-        let bootstrap = ServerBootstrap(group: group!)
+        let bootstrap: ServerBootstrap = ServerBootstrap(group: group!)
             .serverChannelOption(ChannelOptions.backlog, value: 256)
             .serverChannelOption(ChannelOptions.socketOption(.so_reuseaddr), value: 1)
-            .childChannelInitializer { channel in
+            .childChannelInitializer { [weak self] channel in
+                guard let self = self else { return channel.eventLoop.makeFailedFuture(NSError()) }
                 print("Initializing child channel...")
                 return channel.pipeline.addHandler(NIOSSLServerHandler(context: sslContext)).flatMap {
                     channel.pipeline.addHandler(HTTPResponseEncoder()).flatMap {
                         channel.pipeline.addHandler(ByteToMessageHandler(HTTPRequestDecoder(leftOverBytesStrategy: .forwardBytes))).flatMap {
-                            channel.pipeline.addHandler(HTTPServerPipelineHandler())
+                            channel.pipeline.addHandler(HTTPServerPipelineHandler(loggingService: self.loggingService))
                         }
                     }
                 }
@@ -101,7 +102,7 @@ class DefaultNetworkingService: NetworkingService {
     
     func stopServer(completion: @escaping (Result<Void, Error>) -> Void) {
         print("Stopping SSL server...")
-        guard let channel = channel else {
+        guard let channel: Channel = channel else {
             completion(.success(()))
             return
         }
@@ -114,7 +115,7 @@ class DefaultNetworkingService: NetworkingService {
             }
 
             self.group!.shutdownGracefully { error in
-                if let error = error {
+                if let error: Error = error {
                     print("Failed to stop server: \(error)")
                     completion(.failure(error))
                 } else {
@@ -124,11 +125,5 @@ class DefaultNetworkingService: NetworkingService {
             }
         }
     }
-    
-//    private func makeDummyFuture() -> EventLoopFuture<Void> {
-//        let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-//        let promise = eventLoopGroup.next().makePromise(of: Void.self)
-//        promise.succeed(())
-//        return promise.futureResult
-//    }
 }
+
