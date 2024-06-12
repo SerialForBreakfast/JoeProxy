@@ -272,34 +272,12 @@ extension SSLProxyTests {
             return
         }
         
-        // Download the CA bundle
-        downloadCABundle()
-        
-        // Check if CA bundle was downloaded
-        guard FileManager.default.fileExists(atPath: caBundlePath) else {
-            XCTFail("Failed to download CA bundle")
-            return
-        }
-        
-        // Combine the CA bundle with our CA certificate
-        let combinedCAPath = "/tmp/combined-cacert.pem"
-        do {
-            let caBundleData = try Data(contentsOf: URL(fileURLWithPath: caBundlePath))
-            let ourCAData = try Data(contentsOf: certificateService.certificateURL)
-            var combinedData = caBundleData
-            combinedData.append(ourCAData)
-            try combinedData.write(to: URL(fileURLWithPath: combinedCAPath))
-        } catch {
-            XCTFail("Failed to combine CA bundle with our CA certificate: \(error)")
-            return
-        }
-        
         // Execute curl command to test the server response
         let curlTask: Process = Process()
         curlTask.executableURL = URL(fileURLWithPath: "/usr/bin/curl")
         curlTask.arguments = [
             "--proxy", "https://localhost:\(port)",
-            "--cacert", combinedCAPath,
+            "--cacert", certificateService.certificateURL.path,
             "https://httpbin.org/get"
         ]
         
