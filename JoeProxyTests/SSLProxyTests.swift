@@ -13,28 +13,51 @@ final class SSLProxyTests: XCTestCase {
     var fileIO: NonBlockingFileIO!
     private var internalThreadPool: NIOThreadPool!
     private var serverChannel: Channel?
-
+    private let caBundlePath = "/tmp/cacert.pem"
+    
     override func setUpWithError() throws {
-        super.setUp()
+            super.setUp()
+            
+            configurationService = MockConfigurationService()
+            loggingService = MockLoggingService()
+            filteringService = MockFilteringService(shouldAllow: true)
+            certificateService = CertificateService(debug: true)
+            
+            eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
+            internalThreadPool = NIOThreadPool(numberOfThreads: 2)
+            internalThreadPool.start()
+            fileIO = NonBlockingFileIO(threadPool: internalThreadPool)
+            
+            networkingService = DefaultNetworkingService(
+                configurationService: configurationService,
+                filteringService: filteringService,
+                loggingService: loggingService,
+                certificateService: certificateService,
+                fileIO: fileIO
+            )
 
-        configurationService = MockConfigurationService()
-        loggingService = MockLoggingService()
-        filteringService = MockFilteringService(shouldAllow: true)
-        certificateService = CertificateService()
+            if !certificateService.certificateExists {
+                print("Generating test certificate")
+                let expectation = XCTestExpectation(description: "Certificate generated")
+                certificateService.generateCertificate {
+                    expectation.fulfill()
+                }
+                wait(for: [expectation], timeout: 10.0)
+            } else {
+                print("Test certificate already exists")
+            }
+        }
         
-        eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
-        internalThreadPool = NIOThreadPool(numberOfThreads: 2)
-        internalThreadPool.start()
-        fileIO = NonBlockingFileIO(threadPool: internalThreadPool)
-
-        networkingService = DefaultNetworkingService(
-            configurationService: configurationService,
-            filteringService: filteringService,
-            loggingService: loggingService,
-            certificateService: certificateService,
-            fileIO: fileIO
-        )
-
+        override func tearDownWithError() throws {
+            if let channel = serverChannel {
+                try channel.close().wait()
+            }
+            try internalThreadPool.syncShutdownGracefully()
+            try eventLoopGroup.syncShutdownGracefully()
+            try super.tearDownWithError()
+        }
+        
+    private func generateTestCertificate() {
         let expectation = XCTestExpectation(description: "Certificate generated")
         certificateService.generateCertificate {
             expectation.fulfill()
@@ -42,15 +65,19 @@ final class SSLProxyTests: XCTestCase {
         wait(for: [expectation], timeout: 10.0)
     }
     
-    override func tearDownWithError() throws {
-        if let channel = serverChannel {
-            try channel.close().wait()
+    private func openCertificate(_ certURL: URL) {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
+        process.arguments = [certURL.path]
+        
+        do {
+            try process.run()
+            process.waitUntilExit()
+        } catch {
+            XCTFail("Failed to open certificate: \(error)")
         }
-        try internalThreadPool.syncShutdownGracefully()
-        try eventLoopGroup.syncShutdownGracefully()
-        try super.tearDownWithError()
     }
-
+    
     func testServerStart() throws {
         let expectation = XCTestExpectation(description: "Server started")
         
@@ -67,7 +94,7 @@ final class SSLProxyTests: XCTestCase {
         
         wait(for: [expectation], timeout: 10.0)
     }
-
+    
     func testServerStop() throws {
         // Start the server and check the result synchronously
         let startResult = try startServerSync()
@@ -88,7 +115,7 @@ final class SSLProxyTests: XCTestCase {
             XCTFail("Failed to stop server: \(error)")
         }
     }
-
+    
     func testSSLProxyWithCurl() throws {
         // Start the server and check the result synchronously
         let startResult: Result<Void, Error> = try startServerSync()
@@ -143,12 +170,12 @@ final class SSLProxyTests: XCTestCase {
             XCTFail("Failed to start server: \(error)")
             return
         }
-
+        
         guard let port: Int = networkingService.serverPort else {
             XCTFail("Failed to get the server port")
             return
         }
-
+        
         let url = URL(string: "http://showblender.com/")!
         let semaphore = DispatchSemaphore(value: 0)
         var request = URLRequest(url: url)
@@ -175,7 +202,7 @@ final class SSLProxyTests: XCTestCase {
             XCTFail("Failed to stop server: \(error)")
         }
     }
-
+    
     func startServerSync() throws -> Result<Void, Error> {
         let semaphore: DispatchSemaphore = DispatchSemaphore(value: 0)
         var result: Result<Void, Error> = .failure(NSError(domain: "Unknown", code: 0, userInfo: nil))
@@ -188,7 +215,7 @@ final class SSLProxyTests: XCTestCase {
         _ = semaphore.wait(timeout: .now() + 10)  // 10 seconds timeout
         return result
     }
-
+    
     func stopServerSync() throws -> Result<Void, Error> {
         let semaphore: DispatchSemaphore = DispatchSemaphore(value: 0)
         var result: Result<Void, Error> = .failure(NSError(domain: "Unknown", code: 0, userInfo: nil))
@@ -202,3 +229,76 @@ final class SSLProxyTests: XCTestCase {
         return result
     }
 }
+
+
+
+//extension SSLProxyTests {
+//    
+//    private func appendSelfSignedCertToCABundle() {
+//        let fileManager = FileManager.default
+//        let certPath = certificateService.certificateURL.path
+//
+//        guard let certData = try? Data(contentsOf: URL(fileURLWithPath: certPath)) else {
+//            XCTFail("Failed to read self-signed certificate")
+//            return
+//        }
+//
+//        if let fileHandle = FileHandle(forWritingAtPath: caBundlePath) {
+//            fileHandle.seekToEndOfFile()
+//            fileHandle.write(certData)
+//            fileHandle.closeFile()
+//        } else {
+//            XCTFail("Failed to open CA bundle for writing")
+//        }
+//    }
+//
+//    func testProxyUsingHttpBin() throws {
+//        // Start the server and check the result synchronously
+//        let startResult: Result<Void, Error> = try startServerSync()
+//        switch startResult {
+//        case .success:
+//            print("Server started successfully")
+//        case .failure(let error):
+//            XCTFail("Failed to start server: \(error)")
+//            return
+//        }
+//
+//        // Get the dynamically assigned port
+//        guard let port: Int = networkingService.serverPort else {
+//            XCTFail("Failed to get the server port")
+//            return
+//        }
+//
+//        // Execute curl command to test the server response
+//        let curlTask: Process = Process()
+//        curlTask.executableURL = URL(fileURLWithPath: "/usr/bin/curl")
+//        curlTask.arguments = [
+//            "--proxy", "https://localhost:\(port)",
+//            "--cacert", caBundlePath,
+//            "https://httpbin.org/get"
+//        ]
+//
+//        let pipe: Pipe = Pipe()
+//        curlTask.standardOutput = pipe
+//        curlTask.standardError = pipe
+//
+//        try curlTask.run()
+//        curlTask.waitUntilExit()
+//
+//        let data: Data = pipe.fileHandleForReading.readDataToEndOfFile()
+//        let output: String? = String(data: data, encoding: .utf8)
+//
+//        XCTAssertEqual(curlTask.terminationStatus, 0, "Curl command failed with exit code \(curlTask.terminationStatus)")
+//        XCTAssertNotNil(output, "Curl output is nil")
+//        XCTAssertTrue(output?.contains("\"url\": \"https://httpbin.org/get\"") ?? false, "Curl output did not contain expected content. Output: \(output ?? "")")
+//
+//        // Stop the server and check the result synchronously
+//        let stopResult: Result<Void, Error> = try stopServerSync()
+//        switch stopResult {
+//        case .success:
+//            print("Server stopped successfully")
+//        case .failure(let error):
+//            XCTFail("Failed to stop server: \(error)")
+//        }
+//    }
+//}
