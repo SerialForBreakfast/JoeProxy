@@ -31,7 +31,7 @@ class DefaultNetworkingService: NetworkingService {
     func startServer(completion: @escaping (Result<Void, Error>) -> Void) throws {
         print("Starting SSL server setup...")
         
-        if !FileManager.default.fileExists(atPath: certificateService.certificateURL.path) || !FileManager.default.fileExists(atPath: certificateService.pemURL.path) {
+        guard FileManager.default.fileExists(atPath: certificateService.certificateURL.path), FileManager.default.fileExists(atPath: certificateService.pemURL.path) else {
             print("Certificate and/or PEM files are missing at paths:")
             print("Certificate path: \(certificateService.certificateURL.path)")
             print("PEM path: \(certificateService.pemURL.path)")
@@ -90,7 +90,7 @@ class DefaultNetworkingService: NetworkingService {
                 default:
                     break
                 }
-                print("Server started and listening on \(localAddress) serverIP \(serverIP) serverPort \(serverPort)")
+                print("Server started and listening on \(localAddress) serverIP \(serverIP ?? "N/A") serverPort \(serverPort ?? 0)")
                 
             }
             completion(.success(()))
@@ -114,7 +114,7 @@ class DefaultNetworkingService: NetworkingService {
                 return
             }
 
-            self.group!.shutdownGracefully { error in
+            self.group?.shutdownGracefully { error in
                 if let error: Error = error {
                     print("Failed to stop server: \(error)")
                     completion(.failure(error))
@@ -126,4 +126,3 @@ class DefaultNetworkingService: NetworkingService {
         }
     }
 }
-

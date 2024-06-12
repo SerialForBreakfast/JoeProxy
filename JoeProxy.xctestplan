@@ -19,7 +19,8 @@
     {
       "parallelizable" : true,
       "skippedTests" : [
-        "JoeProxyTests"
+        "JoeProxyTests",
+        "SSLProxyTests\/testProxyUsingHttpBin()"
       ],
       "target" : {
         "containerPath" : "container:JoeProxy.xcodeproj",

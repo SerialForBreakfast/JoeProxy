@@ -58,7 +58,7 @@ class ClientConnectionTests: XCTestCase {
         clientChannel.writeAndFlush(NIOAny(HTTPClientRequestPart.end(nil)), promise: nil)
         
         // Wait for response
-        let response = try clientChannel.pipeline.context(handlerType: HTTPClientHandler.self).flatMap { context in
+        let response: Void = try clientChannel.pipeline.context(handlerType: HTTPClientHandler.self).flatMap { context in
             return (context.handler as! HTTPClientHandler).waitForResponse()
         }.wait()
         

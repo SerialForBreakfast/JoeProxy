@@ -1,16 +1,10 @@
-//
-//  NetworkingServiceViewModel.swift
-//  JoeProxy
-//
-//  Created by Joseph McCraw on 6/8/24.
-//
 import Foundation
 import SwiftUI
 import Combine
 
 class NetworkingServiceViewModel: ObservableObject {
     @Published var ipAddress: String?
-    @Published var port: Int = 8443
+    @Published var port: Int?
     @Published var isServerRunning: Bool = false
     @Published var selectedInterface: NetworkInterface?
     @Published var networkInfo: [NetworkInterface] = []
@@ -24,10 +18,16 @@ class NetworkingServiceViewModel: ObservableObject {
     func startServer() {
         do {
             try networkingService.startServer(completion: { [weak self] result in
-                self?.isServerRunning = true
-                self?.ipAddress = self?.networkingService.serverIP
-                self?.port = self?.networkingService.serverPort ?? 8443
-                print("Started server")
+                guard let self = self else { return }
+                switch result {
+                case .success:
+                    self.isServerRunning = true
+                    self.ipAddress = self.networkingService.serverIP
+                    self.port = self.networkingService.serverPort
+                    print("Started server at ipAddress: \(self.networkingService.serverIP ?? "nil") \(self.networkingService.serverPort)")
+                case .failure(let error):
+                    print("Failed to start server: \(error)")
+                }
             })
         } catch {
             print("Failed to start server: \(error)")
@@ -37,8 +37,14 @@ class NetworkingServiceViewModel: ObservableObject {
     func stopServer() {
         do {
             try networkingService.stopServer(completion: { [weak self] result in
-                self?.isServerRunning = false
-                print("Stopped server")
+                guard let self = self else { return }
+                switch result {
+                case .success:
+                    self.isServerRunning = false
+                    print("Stopped server")
+                case .failure(let error):
+                    print("Failed to stop server: \(error)")
+                }
             })
         } catch {
             print("Failed to stop server: \(error)")

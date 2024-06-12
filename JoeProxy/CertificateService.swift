@@ -18,15 +18,15 @@ class CertificateService: ObservableObject {
         guard let documentDirectory = urls.first else {
             fatalError("Could not find document directory")
         }
-
+        
         let certDirectory = debug ? documentDirectory.appendingPathComponent("debugCerts") : documentDirectory
         if debug {
             try? fileManager.createDirectory(at: certDirectory, withIntermediateDirectories: true, attributes: nil)
         }
-
+        
         self.certificateURL = certDirectory.appendingPathComponent("certificate.crt")
         self.pemURL = certDirectory.appendingPathComponent("privateKey.pem")
-
+        
         setup()
         checkCertificateExists()
     }
@@ -54,11 +54,6 @@ class CertificateService: ObservableObject {
     }
 
     func generateCertificate(commonName: String? = nil, organization: String? = nil, organizationalUnit: String? = nil, country: String? = nil, state: String? = nil, locality: String? = nil, completion: (() -> Void)?) {
-        if certificateExists {
-            print("Certificate already exists, created on \(certificateCreationDate!). Overriding...")
-            removeExistingCertificate()
-        }
-
         DispatchQueue.global(qos: .background).async { [weak self] in
             do {
                 guard let self = self else { return }
@@ -97,80 +92,14 @@ class CertificateService: ObservableObject {
 
                 print("Certificate written to \(self.certificateURL.path)")
 
-                // Convert PEM to DER
-                let derCertURL = self.certificateURL.deletingPathExtension().appendingPathExtension("der")
-                let convertProcess = Process()
-                convertProcess.executableURL = URL(fileURLWithPath: self.opensslPath)
-                convertProcess.arguments = ["x509", "-outform", "der", "-in", self.certificateURL.path, "-out", derCertURL.path]
-                try convertProcess.run()
-                convertProcess.waitUntilExit()
-
-                if convertProcess.terminationStatus != 0 {
-                    print("Failed to convert certificate to DER format")
-                    return
-                }
-
                 DispatchQueue.main.async {
                     self.certificateExists = true
                     self.certificateCreationDate = Date()
-                    print("Certificate generation and conversion completed.")
-                    self.importCertificateToKeychain(derCertURL)
+                    print("Certificate generation completed.")
                     completion?()
                 }
             } catch {
                 print("Error generating certificate: \(error)")
-            }
-        }
-    }
-
-    private func importCertificateToKeychain(_ derCertURL: URL) {
-        do {
-            let certData = try Data(contentsOf: derCertURL)
-            print("Certificate data: \(certData as NSData)") // Debugging: Print certificate data
-            guard let certificate = SecCertificateCreateWithData(nil, certData as CFData) else {
-                print("Failed to create SecCertificate object")
-                return
-            }
-
-            let addQuery: [String: Any] = [
-                kSecClass as String: kSecClassCertificate,
-                kSecValueRef as String: certificate,
-                kSecAttrLabel as String: "JoeProxy Certificate"
-            ]
-
-            let addStatus = SecItemAdd(addQuery as CFDictionary, nil)
-            if addStatus == errSecSuccess {
-                print("Certificate added to keychain successfully")
-            } else if addStatus == errSecDuplicateItem {
-                print("Certificate already exists in keychain, skipping import")
-            } else {
-                if let errorMessage = SecCopyErrorMessageString(addStatus, nil) {
-                    print("Failed to add certificate to keychain: \(errorMessage)")
-                } else {
-                    print("Failed to add certificate to keychain with status: \(addStatus)")
-                }
-            }
-        } catch {
-            print("Error reading certificate data: \(error)")
-        }
-    }
-
-    private func removeExistingCertificate() {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassCertificate,
-            kSecAttrLabel as String: "JoeProxy Certificate"
-        ]
-
-        let status = SecItemDelete(query as CFDictionary)
-        if status == errSecSuccess {
-            print("Existing certificate removed")
-        } else if status == errSecItemNotFound {
-            print("No existing certificate to remove")
-        } else {
-            if let errorMessage = SecCopyErrorMessageString(status, nil) {
-                print("Failed to remove existing certificate: \(errorMessage)")
-            } else {
-                print("Failed to remove existing certificate with status: \(status)")
             }
         }
     }
