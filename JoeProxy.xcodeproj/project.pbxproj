@@ -28,6 +28,7 @@
 		442463CF2C16C7CB002951DD /* NIOConverterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 442463CE2C16C7CB002951DD /* NIOConverterTests.swift */; };
 		443BDA2D2C1909EC006C3039 /* PrototypeA.swift in Sources */ = {isa = PBXBuildFile; fileRef = 443BDA2C2C1909EC006C3039 /* PrototypeA.swift */; };
 		443BDA2F2C190AC3006C3039 /* PrototypeBView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 443BDA2E2C190AC3006C3039 /* PrototypeBView.swift */; };
+		443BDA312C19207C006C3039 /* FilteringLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 443BDA302C19207C006C3039 /* FilteringLogView.swift */; };
 		445A3C632C12647D008E68AE /* JoeProxyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 445A3C622C12647D008E68AE /* JoeProxyApp.swift */; };
 		445A3C652C12647D008E68AE /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 445A3C642C12647D008E68AE /* ContentView.swift */; };
 		445A3C672C12647F008E68AE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 445A3C662C12647F008E68AE /* Assets.xcassets */; };
@@ -108,6 +109,7 @@
 		442463CE2C16C7CB002951DD /* NIOConverterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NIOConverterTests.swift; sourceTree = "<group>"; };
 		443BDA2C2C1909EC006C3039 /* PrototypeA.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrototypeA.swift; sourceTree = "<group>"; };
 		443BDA2E2C190AC3006C3039 /* PrototypeBView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrototypeBView.swift; sourceTree = "<group>"; };
+		443BDA302C19207C006C3039 /* FilteringLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilteringLogView.swift; sourceTree = "<group>"; };
 		445A3C5F2C12647D008E68AE /* JoeProxy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = JoeProxy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		445A3C622C12647D008E68AE /* JoeProxyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoeProxyApp.swift; sourceTree = "<group>"; };
 		445A3C642C12647D008E68AE /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -190,6 +192,7 @@
 				445A3C642C12647D008E68AE /* ContentView.swift */,
 				447355932C14EE7100B6C5A7 /* NetworkingServiceViewModel.swift */,
 				447355952C14FE3300B6C5A7 /* LogEntry.swift */,
+				443BDA302C19207C006C3039 /* FilteringLogView.swift */,
 				4402B6522C128F0100761AC5 /* LogView.swift */,
 				447355972C14FE5F00B6C5A7 /* LogViewModel.swift */,
 				44DFAE642C155B85006CCE5C /* LogTableViewController.swift */,
@@ -465,6 +468,7 @@
 				445A3C942C126C3D008E68AE /* NetworkingService.swift in Sources */,
 				44DB7EF62C17BBC300407B2B /* NIOAny+Extensions.swift in Sources */,
 				445A3C652C12647D008E68AE /* ContentView.swift in Sources */,
+				443BDA312C19207C006C3039 /* FilteringLogView.swift in Sources */,
 				447355962C14FE3300B6C5A7 /* LogEntry.swift in Sources */,
 				445A3C8E2C126616008E68AE /* ConfigurationService.swift in Sources */,
 				44C9101F2C16FB00003AEFCB /* JoeProxyApp+WindowLogic.swift in Sources */,

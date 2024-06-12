@@ -36,6 +36,7 @@ struct LogView: View {
                 .removeDuplicates()
                 .sink { newFilterText in
                     print("Filtering logs with: \(newFilterText)")
+                    viewModel.filterLogs(with: newFilterText)
                 }
                 .store(in: &cancellables)
 

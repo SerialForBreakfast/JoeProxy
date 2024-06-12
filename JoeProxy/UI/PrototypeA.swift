@@ -20,7 +20,7 @@ struct PrototypeAView: View {
                 TextField("Filter logs...", text: $filterText)
                     .padding()
                     .onChange(of: filterText) { newValue in
-                        viewModel.updateFilteredLogs(with: newValue)
+                        viewModel.filterLogs(with: newValue)
                     }
                 Button(isPaused ? "Resume" : "Pause") {
                     isPaused.toggle()

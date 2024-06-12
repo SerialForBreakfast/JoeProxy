@@ -8,6 +8,7 @@ class LogViewModel: ObservableObject {
 
     private let loggingService: LoggingService
     private var cancellables: Set<AnyCancellable> = []
+    private var isUpdatingLogs: Bool = false  // Flag to prevent recursive updates
 
     init(loggingService: LoggingService) {
         self.loggingService = loggingService
@@ -72,23 +73,31 @@ class LogViewModel: ObservableObject {
 
     func updateLogs(with newLogs: [LogEntry]) {
         DispatchQueue.main.async {
+            guard !self.isUpdatingLogs else { return }
+            self.isUpdatingLogs = true
             if self.logs != newLogs {
                 self.logs = newLogs
                 self.filteredLogs = newLogs
                 print("Updating logs")
             }
+            self.isUpdatingLogs = false
         }
     }
-    // Ensure updateFilteredLogs is a method
+
     func updateFilteredLogs(with filterText: String) {
-        if filterText.isEmpty {
-            self.filteredLogs = self.logs
-        } else {
-            self.filteredLogs = self.logs.filter { log in
-                log.request.contains(filterText) ||
-                log.headers.contains(filterText) ||
-                log.response.contains(filterText)
+        DispatchQueue.main.async {
+            guard !self.isUpdatingLogs else { return }
+            self.isUpdatingLogs = true
+            if filterText.isEmpty {
+                self.filteredLogs = self.logs
+            } else {
+                self.filteredLogs = self.logs.filter { log in
+                    log.request.contains(filterText) ||
+                    log.headers.contains(filterText) ||
+                    log.response.contains(filterText)
+                }
             }
+            self.isUpdatingLogs = false
         }
     }
 }

@@ -1,25 +1,34 @@
 import SwiftUI
 
 struct InspectorView: View {
-    let logEntry: LogEntry?
+    @State var logEntry: LogEntry?
 
     var body: some View {
         VStack(alignment: .leading) {
-            Text("Request: \(logEntry?.request ?? "N/A")")
-                .font(.headline)
-            Text("Headers: \(logEntry?.headers ?? "N/A")")
-                .font(.subheadline)
-            Text("Response: \(logEntry?.response ?? "N/A")")
-                .font(.subheadline)
-            Text("Status Code: \(logEntry?.statusCodeString ?? "N/A")")
-                .font(.subheadline)
-            Text("Timestamp: \(logEntry?.timestampString ?? "N/A")")
-                .font(.subheadline)
-            Text("Response Body: \(prettifyJSON(logEntry?.responseBody ?? "N/A"))")
-                .font(.body)
+            if let log = logEntry {
+                Text("Request: \(log.request)")
+                    .font(.headline)
+                Text("Headers: \(log.headers)")
+                    .font(.subheadline)
+                Text("Response: \(log.response)")
+                    .font(.subheadline)
+                Text("Status Code: \(log.statusCode)")
+                    .font(.subheadline)
+                Text("Timestamp: \(log.timestampString)")
+                    .font(.subheadline)
+                Text("Response Body: \(prettifyJSON(log.responseBody))")
+                    .font(.body)
+            } else {
+                Text("No log selected")
+                    .font(.headline)
+            }
             Spacer()
         }
         .padding()
+    }
+
+    func setLogEntry(setLogEntry: LogEntry) {
+        logEntry = setLogEntry
     }
 
     private func prettifyJSON(_ jsonString: String) -> String {
@@ -29,5 +38,11 @@ struct InspectorView: View {
             return jsonString
         }
         return String(data: prettyData, encoding: .utf8) ?? jsonString
+    }
+}
+
+struct InspectorView_Previews: PreviewProvider {
+    static var previews: some View {
+        InspectorView(logEntry: nil)
     }
 }
