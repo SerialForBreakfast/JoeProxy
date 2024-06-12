@@ -1,68 +1,57 @@
-//
-//  FilteringLogView.swift
-//  JoeProxy
-//
-//  Created by Joseph McCraw on 6/11/24.
-//
-
 import SwiftUI
 
 struct FilteringLogView: View {
-    @State private var filterText: String = ""
-    @State private var filteredLogs: [LogEntry] = MockLogs.logs
-    @State private var selectedLogEntry: LogEntry?
+    @State private var logs: [LogEntry] = MockLogs.data
+    @State private var filteredLogs: [LogEntry] = MockLogs.data
+    @State private var filterText = ""
+    @Binding var selectedLogEntry: LogEntry?
 
     var body: some View {
         VStack {
-            Table(filteredLogs) {
-                TableColumn("Timestamp", value: \.timestampString)
-                TableColumn("Host", value: \.host)
-                TableColumn("Path", value: \.path)
-                TableColumn("Request", value: \.request)
-                TableColumn("Headers", value: \.headers)
-                TableColumn("Response", value: \.response)
-                TableColumn("Status Code", value: \.statusCodeString)
-            }
-            .frame(minHeight: 300)
-            .onChange(of: filterText) { newValue in
-                applyFilter(newValue)
-            }
-            .onTapGesture {
-                // Set the selected log entry when a row is clicked
-                if let selectedIndex = filteredLogs.firstIndex(where: { $0.id == selectedLogEntry?.id }) {
-                    selectedLogEntry = filteredLogs[selectedIndex]
-                }
-            }
             TextField("Filter logs...", text: $filterText)
                 .padding()
-        }
-        .onAppear {
-            filteredLogs = MockLogs.logs
-        }
-        .sheet(item: $selectedLogEntry) { log in
-            InspectorView(logEntry: log)
-        }
-    }
+                .onChange(of: filterText) { newValue in
+                    filterLogs(with: newValue)
+                }
 
-    private func applyFilter(_ filter: String) {
-        if filter.isEmpty {
-            filteredLogs = MockLogs.logs
-        } else {
-            filteredLogs = MockLogs.logs.filter { log in
-                log.host.contains(filter) ||
-                log.path.contains(filter) ||
-                log.request.contains(filter) ||
-                log.headers.contains(filter) ||
-                log.response.contains(filter) ||
-                log.responseBody.contains(filter) ||
-                log.statusCodeString.contains(filter)
+            Table(filteredLogs) {
+                TableColumn("Timestamp") { log in
+                    Text(log.timestampString)
+                }
+                TableColumn("Host") { log in
+                    Text(log.host)
+                }
+                TableColumn("Path") { log in
+                    Text(log.path)
+                }
+                TableColumn("Request") { log in
+                    Text(log.request)
+                }
+                TableColumn("Headers") { log in
+                    Text(log.headers)
+                }
+                TableColumn("Response") { log in
+                    Text(log.response)
+                }
+                TableColumn("Status Code") { log in
+                    Text(log.statusCodeString)
+                }
+            }
+            .onTapGesture {
+                selectedLogEntry = filteredLogs[0]  // Placeholder, update logic to handle row selection
             }
         }
     }
-}
 
-struct FilteringLogView_Previews: PreviewProvider {
-    static var previews: some View {
-        FilteringLogView()
+    private func filterLogs(with filterText: String) {
+        if filterText.isEmpty {
+            filteredLogs = logs
+        } else {
+            filteredLogs = logs.filter { log in
+                log.request.contains(filterText) ||
+                log.headers.contains(filterText) ||
+                log.response.contains(filterText)
+            }
+        }
     }
 }

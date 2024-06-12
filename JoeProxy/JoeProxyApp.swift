@@ -79,7 +79,6 @@ struct JoeProxyApp: App {
                 )
             case .prototypeB:
                 PrototypeBView(
-                    logViewModel: viewModel,
                     certificateService: certificateService,
                     networkingViewModel: networkingViewModel
                 )

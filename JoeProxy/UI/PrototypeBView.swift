@@ -5,37 +5,36 @@
 //  Created by Joseph McCraw on 6/11/24.
 //
 
-import Foundation
 import SwiftUI
 
 struct PrototypeBView: View {
-    @ObservedObject var logViewModel: LogViewModel
+    @State private var selectedLogEntry: LogEntry?
     @ObservedObject var certificateService: CertificateService
     @ObservedObject var networkingViewModel: NetworkingServiceViewModel
-    
-    @State private var selectedLogEntry: LogEntry?
-    @State private var filterText = ""
 
     var body: some View {
         VStack {
             HStack {
-                FilteringLogView()
+                FilteringLogView(selectedLogEntry: $selectedLogEntry)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+
                 InspectorView(logEntry: selectedLogEntry)
-                    .frame(minWidth: 600, minHeight: 400)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
             HStack {
                 CertificateConfigurationView(certificateService: certificateService)
-                    .frame(minWidth: 600, minHeight: 400)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+
                 SetupInstructionView(networkingViewModel: networkingViewModel)
-                    .frame(minWidth: 600, minHeight: 400)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .onAppear {
-            logViewModel.loadLogs()
             networkingViewModel.refreshNetworkInfo()
             if let firstInterface = networkingViewModel.networkInfo.first {
                 networkingViewModel.selectedInterface = firstInterface
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }

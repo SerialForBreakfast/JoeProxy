@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct InspectorView: View {
-    @State var logEntry: LogEntry?
+    var logEntry: LogEntry?
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -25,10 +25,6 @@ struct InspectorView: View {
             Spacer()
         }
         .padding()
-    }
-
-    func setLogEntry(setLogEntry: LogEntry) {
-        logEntry = setLogEntry
     }
 
     private func prettifyJSON(_ jsonString: String) -> String {

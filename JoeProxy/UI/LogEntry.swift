@@ -48,7 +48,7 @@ extension LogEntry {
 }
 
 struct MockLogs {
-    static let logs: [LogEntry] = [
+    static let data: [LogEntry] = [
         LogEntry(timestamp: Date(), host: "example.com", path: "/index.html", request: "GET /index.html", headers: "Host: example.com\nUser-Agent: TestAgent", response: "200 OK", responseBody: "{ \"data\": \"example\" }", statusCode: 200),
         LogEntry(timestamp: Date().addingTimeInterval(-60), host: "api.example.com", path: "/api/data", request: "POST /api/data", headers: "Host: api.example.com\nContent-Type: application/json", response: "201 Created", responseBody: "{ \"data\": \"example\" }", statusCode: 201),
         LogEntry(timestamp: Date().addingTimeInterval(-120), host: "example.com", path: "/notfound.html", request: "GET /notfound.html", headers: "Host: example.com\nUser-Agent: TestAgent", response: "404 Not Found", responseBody: "{ \"data\": \"example\" }", statusCode: 404),
