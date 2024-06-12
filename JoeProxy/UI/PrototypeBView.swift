@@ -1,25 +1,21 @@
-//
-//  PrototypeBView.swift
-//  JoeProxy
-//
-//  Created by Joseph McCraw on 6/11/24.
-//
-
 import SwiftUI
 
 struct PrototypeBView: View {
-    @State private var selectedLogEntry: LogEntry?
+    @EnvironmentObject var logStateStore: LogStateStore
     @ObservedObject var certificateService: CertificateService
     @ObservedObject var networkingViewModel: NetworkingServiceViewModel
 
     var body: some View {
         VStack {
             HStack {
-                FilteringLogView(selectedLogEntry: $selectedLogEntry)
+                FilteringLogView()
+                    .frame(minWidth: 300, minHeight: 300)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .environmentObject(logStateStore)
 
-                InspectorView(logEntry: selectedLogEntry)
+                InspectorView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .environmentObject(logStateStore)
             }
             HStack {
                 CertificateConfigurationView(certificateService: certificateService)
@@ -27,12 +23,6 @@ struct PrototypeBView: View {
 
                 SetupInstructionView(networkingViewModel: networkingViewModel)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-            }
-        }
-        .onAppear {
-            networkingViewModel.refreshNetworkInfo()
-            if let firstInterface = networkingViewModel.networkInfo.first {
-                networkingViewModel.selectedInterface = firstInterface
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

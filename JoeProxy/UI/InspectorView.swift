@@ -1,11 +1,11 @@
 import SwiftUI
 
 struct InspectorView: View {
-    var logEntry: LogEntry?
+    @EnvironmentObject var logStateStore: LogStateStore
 
     var body: some View {
         VStack(alignment: .leading) {
-            if let log = logEntry {
+            if let log = logStateStore.selectedLogEntry {
                 Text("Request: \(log.request)")
                     .font(.headline)
                 Text("Headers: \(log.headers)")
@@ -34,11 +34,5 @@ struct InspectorView: View {
             return jsonString
         }
         return String(data: prettyData, encoding: .utf8) ?? jsonString
-    }
-}
-
-struct InspectorView_Previews: PreviewProvider {
-    static var previews: some View {
-        InspectorView(logEntry: nil)
     }
 }

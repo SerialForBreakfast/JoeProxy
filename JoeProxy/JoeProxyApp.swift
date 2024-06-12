@@ -53,8 +53,8 @@ struct JoeProxyApp: App {
     @StateObject var certificateService: CertificateService
     @StateObject var viewModel: LogViewModel
     @StateObject var networkingViewModel: NetworkingServiceViewModel
+    @StateObject private var logStateStore = LogStateStore()
     @State private var showSetupInstructions = false
-    @State private var selectedLogEntry: LogEntry?
     @State private var currentPrototype: UIPrototype = .prototypeB
 
     init(initializer: DependencyInitializer = DependencyInitializer()) {
@@ -82,25 +82,8 @@ struct JoeProxyApp: App {
                     certificateService: certificateService,
                     networkingViewModel: networkingViewModel
                 )
+                .environmentObject(logStateStore)
             }
         }
-
-        WindowGroup("Inspector") {
-            InspectorView(logEntry: selectedLogEntry ?? LogEntry.default)
-                .frame(minWidth: 600, minHeight: 400)
-        }
-        .handlesExternalEvents(matching: Set(arrayLiteral: "*"))
-
-        WindowGroup("Certificate Configuration") {
-            CertificateConfigurationView(certificateService: certificateService)
-                .frame(minWidth: 600, minHeight: 400)
-        }
-        .handlesExternalEvents(matching: Set(arrayLiteral: "*"))
-
-        WindowGroup("Setup Instructions") {
-            SetupInstructionView(networkingViewModel: networkingViewModel)
-                .frame(minWidth: 600, minHeight: 400)
-        }
-        .handlesExternalEvents(matching: Set(arrayLiteral: "*"))
     }
 }

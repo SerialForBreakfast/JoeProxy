@@ -52,7 +52,7 @@ struct ContentView: View {
             
             
             if let selectedLog = selectedLogEntry {
-                InspectorView(logEntry: selectedLog)
+                InspectorView()
                     .frame(width: 300) // Adjust width as necessary
             }
         }

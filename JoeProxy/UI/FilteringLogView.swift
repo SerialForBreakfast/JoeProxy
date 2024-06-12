@@ -1,10 +1,18 @@
 import SwiftUI
+import Foundation
+import Combine
+
+class LogStateStore: ObservableObject {
+    @Published var selectedLogEntry: LogEntry?
+}
 
 struct FilteringLogView: View {
     @State private var logs: [LogEntry] = MockLogs.data
     @State private var filteredLogs: [LogEntry] = MockLogs.data
     @State private var filterText = ""
-    @Binding var selectedLogEntry: LogEntry?
+    @EnvironmentObject var logStateStore: LogStateStore
+
+    @State private var selectedRowIDs: Set<LogEntry.ID> = []
 
     var body: some View {
         VStack {
@@ -14,7 +22,7 @@ struct FilteringLogView: View {
                     filterLogs(with: newValue)
                 }
 
-            Table(filteredLogs) {
+            Table(filteredLogs, selection: $selectedRowIDs) {
                 TableColumn("Timestamp") { log in
                     Text(log.timestampString)
                 }
@@ -37,8 +45,10 @@ struct FilteringLogView: View {
                     Text(log.statusCodeString)
                 }
             }
-            .onTapGesture {
-                selectedLogEntry = filteredLogs[0]  // Placeholder, update logic to handle row selection
+            .onChange(of: selectedRowIDs) { newSelection in
+                if let selectedID = newSelection.first, let selectedLog = filteredLogs.first(where: { $0.id == selectedID }) {
+                    logStateStore.selectedLogEntry = selectedLog
+                }
             }
         }
     }
