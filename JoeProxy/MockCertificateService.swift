@@ -8,23 +8,23 @@
 import Foundation
 import Combine
 
-class MockCertificateService: CertificateService {
-    override func generateCertificate(commonName: String? = nil, organization: String? = nil, organizationalUnit: String? = nil, country: String? = nil, state: String? = nil, locality: String? = nil, completion: (() -> Void)? = nil) {
-        DispatchQueue.global(qos: .background).async {
-            print("Mock certificate generation started...")
-            self.certificateExists = true
-            self.certificateCreationDate = Date()
-            DispatchQueue.main.async {
-                print("Mock certificate generation completed.")
-            }
-        }
-    }
-    
-    override func checkCertificateExists() {
-        self.certificateExists = false
-        self.certificateCreationDate = nil
-    }
-}
+//class MockCertificateService: CertificateService {
+//    override func generateCertificate(commonName: String? = nil, organization: String? = nil, organizationalUnit: String? = nil, country: String? = nil, state: String? = nil, locality: String? = nil, completion: (() -> Void)? = nil) {
+//        DispatchQueue.global(qos: .background).async {
+//            print("Mock certificate generation started...")
+//            self.certificateExists = true
+//            self.certificateCreationDate = Date()
+//            DispatchQueue.main.async {
+//                print("Mock certificate generation completed.")
+//            }
+//        }
+//    }
+//    
+//    override func checkCertificateExists() {
+//        self.certificateExists = false
+//        self.certificateCreationDate = nil
+//    }
+//}
 
 
 // Mock Networking Service to avoid actual network operations

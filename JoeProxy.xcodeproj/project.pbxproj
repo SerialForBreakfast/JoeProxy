@@ -13,6 +13,7 @@
 		4402B6552C12901500761AC5 /* BasicConfigurationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4402B6542C12901500761AC5 /* BasicConfigurationService.swift */; };
 		4402B6572C12A87400761AC5 /* NIOHTTP1 in Frameworks */ = {isa = PBXBuildFile; productRef = 4402B6562C12A87400761AC5 /* NIOHTTP1 */; };
 		4402B6592C12AB1700761AC5 /* SimpleHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4402B6582C12AB1700761AC5 /* SimpleHandlerTests.swift */; };
+		441610552C1A149C0097F1B4 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 441610542C1A149C0097F1B4 /* LICENSE */; };
 		442463B72C158113002951DD /* ClientConnectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 442463B62C158113002951DD /* ClientConnectionTests.swift */; };
 		442463B92C158180002951DD /* HTTPServerHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 442463B82C158180002951DD /* HTTPServerHandler.swift */; };
 		442463BB2C15821E002951DD /* HTTPClientHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 442463BA2C15821E002951DD /* HTTPClientHandler.swift */; };
@@ -94,6 +95,7 @@
 		4402B6522C128F0100761AC5 /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
 		4402B6542C12901500761AC5 /* BasicConfigurationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasicConfigurationService.swift; sourceTree = "<group>"; };
 		4402B6582C12AB1700761AC5 /* SimpleHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleHandlerTests.swift; sourceTree = "<group>"; };
+		441610542C1A149C0097F1B4 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		442463B62C158113002951DD /* ClientConnectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClientConnectionTests.swift; sourceTree = "<group>"; };
 		442463B82C158180002951DD /* HTTPServerHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPServerHandler.swift; sourceTree = "<group>"; };
 		442463BA2C15821E002951DD /* HTTPClientHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPClientHandler.swift; sourceTree = "<group>"; };
@@ -319,6 +321,7 @@
 			isa = PBXGroup;
 			children = (
 				44EDF2012C131948007D7C35 /* entitlements.md */,
+				441610542C1A149C0097F1B4 /* LICENSE */,
 			);
 			path = docs;
 			sourceTree = "<group>";
@@ -438,6 +441,7 @@
 			files = (
 				44EDF2022C131948007D7C35 /* entitlements.md in Resources */,
 				445A3C6A2C12647F008E68AE /* Preview Assets.xcassets in Resources */,
+				441610552C1A149C0097F1B4 /* LICENSE in Resources */,
 				445A3C672C12647F008E68AE /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

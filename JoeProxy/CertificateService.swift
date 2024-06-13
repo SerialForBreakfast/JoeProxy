@@ -2,14 +2,27 @@ import Foundation
 import Combine
 import Security
 
+enum CertificateConfiguration {
+    case v3CA
+    case minimal
+}
+
 class CertificateService: ObservableObject {
     @Published var certificateExists: Bool = false
     @Published var certificateCreationDate: Date?
 
     let certificateURL: URL
     let pemURL: URL
-    private var opensslPath: String = "/usr/bin/openssl"
+    var opensslPath: String = "/usr/bin/openssl"
     var opensslInstaller: OpenSSLInstaller
+    let configuration: CertificateConfiguration = .minimal
+
+    private let v3CaConfig: String = """
+    [ v3_ca ]
+    subjectKeyIdentifier=hash
+    authorityKeyIdentifier=keyid:always,issuer
+    basicConstraints = CA:true
+    """
 
     init(opensslInstaller: OpenSSLInstaller = OpenSSLInstaller(), debug: Bool = false) {
         self.opensslInstaller = opensslInstaller
@@ -80,7 +93,22 @@ class CertificateService: ObservableObject {
 
                 let certProcess = Process()
                 certProcess.executableURL = URL(fileURLWithPath: self.opensslPath)
-                certProcess.arguments = ["req", "-x509", "-new", "-nodes", "-key", self.pemURL.path, "-sha256", "-days", "365", "-out", self.certificateURL.path, "-subj", "/CN=\(commonName ?? "Test")/O=\(organization ?? "TestOrg")/OU=\(organizationalUnit ?? "TestUnit")/C=\(country ?? "US")/ST=\(state ?? "TestState")/L=\(locality ?? "TestLocality")"]
+                var certArguments: [String] = [
+                    "req", "-x509", "-new", "-nodes", "-key", self.pemURL.path,
+                    "-sha256", "-days", "365", "-out", self.certificateURL.path,
+                    "-subj", "/CN=\(commonName ?? "Test")/O=\(organization ?? "TestOrg")/OU=\(organizationalUnit ?? "TestUnit")/C=\(country ?? "US")/ST=\(state ?? "TestState")/L=\(locality ?? "TestLocality")"
+                ]
+                
+                switch configuration {
+                case .v3CA:
+                    let configFilePath = self.createTempConfigFile()
+                    certArguments.append(contentsOf: ["-extensions", "v3_ca", "-config", configFilePath])
+                case .minimal:
+                    // No additional arguments needed for minimal configuration
+                    break
+                }
+
+                certProcess.arguments = certArguments
 
                 try certProcess.run()
                 certProcess.waitUntilExit()
@@ -102,5 +130,18 @@ class CertificateService: ObservableObject {
                 print("Error generating certificate: \(error)")
             }
         }
+    }
+
+    private func createTempConfigFile() -> String {
+        let tempDir = FileManager.default.temporaryDirectory
+        let configFile = tempDir.appendingPathComponent("openssl.cnf")
+        
+        do {
+            try v3CaConfig.write(to: configFile, atomically: true, encoding: .utf8)
+        } catch {
+            print("Failed to write OpenSSL config file: \(error)")
+        }
+        
+        return configFile.path
     }
 }

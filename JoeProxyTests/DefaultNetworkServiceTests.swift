@@ -7,12 +7,12 @@ final class DefaultNetworkingServiceTests: XCTestCase {
 
     var networkingService: MockDefaultNetworkingService!
     var configurationService: MockDefaultNetworkingConfigurationService!
-    var certificateService: MockCertificateService!
+    var certificateService: CertificateService!
     
     override func setUpWithError() throws {
         configurationService = MockDefaultNetworkingConfigurationService()
         configurationService.proxyPort = 8081 // Use a non-restricted port
-        certificateService = MockCertificateService()
+        certificateService = CertificateService()
     }
     
     override func tearDownWithError() throws {
