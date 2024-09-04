@@ -8,6 +8,12 @@
 import Foundation
 import Combine
 
+
+//Create a mock CertificateService
+//class MockCertificateService: CertificateService {
+//    override func
+//}
+
 //class MockCertificateService: CertificateService {
 //    override func generateCertificate(commonName: String? = nil, organization: String? = nil, organizationalUnit: String? = nil, country: String? = nil, state: String? = nil, locality: String? = nil, completion: (() -> Void)? = nil) {
 //        DispatchQueue.global(qos: .background).async {

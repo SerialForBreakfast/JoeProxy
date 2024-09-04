@@ -76,7 +76,12 @@ class CertificateServiceTests: XCTestCase {
             
             expectation.fulfill()
         }
-        waitForExpectations(timeout: 10, handler: nil)
+        waitForExpectations(timeout: 10) { error in
+            if let error = error {
+                print("💡 Test timed out with error: \(error)")
+                XCTFail("Test timed out: \(error.localizedDescription)")
+            }
+        }
     }
     
     func testCheckCertificateExists() {
@@ -112,6 +117,7 @@ class CertificateServiceTests: XCTestCase {
         XCTAssertTrue(output.contains("BEGIN CERTIFICATE"), "Output should contain certificate beginning")
         XCTAssertTrue(output.contains("END CERTIFICATE"), "Output should contain certificate ending")
     }
+    
     private func validateFile(at path: URL, withArguments arguments: [String]) -> String {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: certificateService.opensslPath)

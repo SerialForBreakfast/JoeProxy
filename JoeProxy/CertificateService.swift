@@ -66,70 +66,76 @@ class CertificateService: ObservableObject {
         }
     }
 
-    func generateCertificate(commonName: String? = nil, organization: String? = nil, organizationalUnit: String? = nil, country: String? = nil, state: String? = nil, locality: String? = nil, completion: (() -> Void)?) {
+    func generateCertificate(commonName: String? = "Default Name", organization: String? = "Default Organization", organizationalUnit: String? = "Default OU", country: String? = "US", state: String? = "Default State", locality: String? = "Default Locality", keySize: Int = 2048, validityDays: Int = 365, completion: (() -> Void)?) {
         DispatchQueue.global(qos: .background).async { [weak self] in
-            do {
-                guard let self = self else { return }
-                print("Using OpensslPath \(self.opensslPath). Starting certificate generation...")
+            guard let self = self else { return }
+            self.log("Using OpensslPath \(self.opensslPath). Starting certificate generation...")
 
-                guard FileManager.default.fileExists(atPath: self.opensslPath) else {
-                    print("OpenSSL not found at path \(self.opensslPath). Please install OpenSSL via Homebrew.")
-                    return
-                }
+            guard FileManager.default.fileExists(atPath: self.opensslPath) else {
+                self.log("OpenSSL not found at path \(self.opensslPath). Please install OpenSSL.")
+                return
+            }
 
-                let privateKeyProcess = Process()
-                privateKeyProcess.executableURL = URL(fileURLWithPath: self.opensslPath)
-                privateKeyProcess.arguments = ["genpkey", "-algorithm", "RSA", "-out", self.pemURL.path, "-pkeyopt", "rsa_keygen_bits:2048"]
+            let privateKeyProcess = Process()
+            privateKeyProcess.executableURL = URL(fileURLWithPath: self.opensslPath)
+            privateKeyProcess.arguments = ["genpkey", "-algorithm", "RSA", "-out", self.pemURL.path, "-pkeyopt", "rsa_keygen_bits:\(keySize)"]
 
-                try privateKeyProcess.run()
-                privateKeyProcess.waitUntilExit()
+            let privateKeyResult = self.runProcess(process: privateKeyProcess)
+            guard privateKeyResult.success else {
+                self.log("Failed to create private key: \(privateKeyResult.message)")
+                return
+            }
 
-                if privateKeyProcess.terminationStatus != 0 {
-                    print("Failed to create private key")
-                    return
-                }
+            self.log("Private key written to \(self.pemURL.path)")
 
-                print("Private key written to \(self.pemURL.path)")
+            let certProcess = Process()
+            certProcess.executableURL = URL(fileURLWithPath: self.opensslPath)
+            var certArguments: [String] = [
+                "req", "-x509", "-new", "-nodes", "-key", self.pemURL.path,
+                "-sha256", "-days", "\(validityDays)", "-out", self.certificateURL.path,
+                "-subj", "/CN=\(commonName!)/O=\(organization!)/OU=\(organizationalUnit!)/C=\(country!)/ST=\(state!)/L=\(locality!)"
+            ]
+            
+            switch self.configuration {
+            case .v3CA:
+                let configFilePath = self.createTempConfigFile()
+                certArguments.append(contentsOf: ["-extensions", "v3_ca", "-config", configFilePath])
+            case .minimal:
+                break
+            }
 
-                let certProcess = Process()
-                certProcess.executableURL = URL(fileURLWithPath: self.opensslPath)
-                var certArguments: [String] = [
-                    "req", "-x509", "-new", "-nodes", "-key", self.pemURL.path,
-                    "-sha256", "-days", "365", "-out", self.certificateURL.path,
-                    "-subj", "/CN=\(commonName ?? "Test")/O=\(organization ?? "TestOrg")/OU=\(organizationalUnit ?? "TestUnit")/C=\(country ?? "US")/ST=\(state ?? "TestState")/L=\(locality ?? "TestLocality")"
-                ]
-                
-                switch configuration {
-                case .v3CA:
-                    let configFilePath = self.createTempConfigFile()
-                    certArguments.append(contentsOf: ["-extensions", "v3_ca", "-config", configFilePath])
-                case .minimal:
-                    // No additional arguments needed for minimal configuration
-                    break
-                }
+            certProcess.arguments = certArguments
 
-                certProcess.arguments = certArguments
+            let certResult = self.runProcess(process: certProcess)
+            guard certResult.success else {
+                self.log("Failed to create certificate: \(certResult.message)")
+                return
+            }
 
-                try certProcess.run()
-                certProcess.waitUntilExit()
+            self.log("Certificate written to \(self.certificateURL.path)")
 
-                if certProcess.terminationStatus != 0 {
-                    print("Failed to create certificate")
-                    return
-                }
-
-                print("Certificate written to \(self.certificateURL.path)")
-
-                DispatchQueue.main.async {
-                    self.certificateExists = true
-                    self.certificateCreationDate = Date()
-                    print("Certificate generation completed.")
-                    completion?()
-                }
-            } catch {
-                print("Error generating certificate: \(error)")
+            DispatchQueue.main.async {
+                self.certificateExists = true
+                self.certificateCreationDate = Date()
+                self.log("Certificate generation completed.")
+                completion?()
             }
         }
+    }
+
+    private func runProcess(process: Process) -> (success: Bool, message: String) {
+        do {
+            try process.run()
+            process.waitUntilExit()
+            return (process.terminationStatus == 0, "Process terminated with status \(process.terminationStatus)")
+        } catch {
+            return (false, "Failed to run process: \(error)")
+        }
+    }
+
+    private func log(_ message: String) {
+        // Implement logging mechanism here
+        print(message)
     }
 
     private func createTempConfigFile() -> String {
@@ -145,3 +151,4 @@ class CertificateService: ObservableObject {
         return configFile.path
     }
 }
+

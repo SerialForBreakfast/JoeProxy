@@ -31,6 +31,7 @@ struct NetworkInfoView: View {
     }
 
     private func fetchNetworkDetails() {
+        
         // Fetch and update network details
         networkDetails = [
             "Local IP": "192.168.1.2",
@@ -38,8 +39,9 @@ struct NetworkInfoView: View {
             "Router": "192.168.1.1",
             "DNS": "8.8.8.8"
         ]
+        
     }
-
+    
     private func pingIPAddress(_ ipAddress: String) {
         // Implement ping logic and update pingResult
         pingResult = "Pinging \(ipAddress)..."
